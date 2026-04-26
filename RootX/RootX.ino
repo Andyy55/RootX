@@ -9,11 +9,11 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 // --- SETTING PIN JOYSTICK (S3 N16R8 Lu) ---
-#define PIN_UP    42
-#define PIN_DOWN  41
-#define PIN_LEFT  40
-#define PIN_RIGHT 39
-#define PIN_OK    38
+#define PIN_UP    13
+#define PIN_DOWN  12
+#define PIN_LEFT  14
+#define PIN_RIGHT 15
+#define PIN_OK    16
 
 // --- VARIABEL MENU GLOBAL (Biar semua file kenal) ---
 bool inSubMenu = false;    // Status: lagi di Logo (false) atau di List (true)
@@ -32,7 +32,7 @@ void setup() {
   pinMode(PIN_OK, INPUT_PULLUP);
 
   // Setup I2C buat S3 N16R8 (PINnya)
-  Wire.begin(35, 36);
+  Wire.begin(8, 9);
 
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     for(;;);
