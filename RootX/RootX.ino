@@ -12,8 +12,8 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 #define PIN_UP    13
 #define PIN_DOWN  12
 #define PIN_LEFT  14
-#define PIN_RIGHT 27
-#define PIN_OK    26
+#define PIN_RIGHT 15
+#define PIN_OK    16
 
 // --- VARIABEL MENU ---
 int currentMenu = 0;
