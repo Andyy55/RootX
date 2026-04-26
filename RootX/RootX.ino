@@ -31,7 +31,7 @@ void setup() {
   pinMode(PIN_OK, INPUT_PULLUP);
 
   // Setup I2C buat S3 N16R8 (Pake Pin 1 & 2 biar aman)
-  Wire.begin(1, 2);
+  Wire.begin(8, 9);
 
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     for(;;);
