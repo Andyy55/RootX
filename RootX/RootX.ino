@@ -55,7 +55,11 @@ void setup() {
 }
 
 void loop() {
-  handleJoystick();      // Baca input 5 arah
-  tampilkanMenuUtama();  // Gambar Menu di Layar
-  delay(10);
+  handleJoystick(); // Cek joystick (Navigasi Kanan-Kiri atau Atas-Bawah)
+
+  if (inSubMenu == false) {
+    tampilkanMenuLogo();  // Munculin Logo Gede (Kanan-Kiri)
+  } else {
+    tampilkanMenuUtama(); // Munculin List Menu (Atas-Bawah)
+  }
 }
