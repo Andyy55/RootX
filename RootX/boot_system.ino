@@ -4,7 +4,51 @@ void tampilkanLogoDulu() {
   // Gambar logo mahkota/foto lu dari photo_data.h
   display.drawBitmap(0, 0, my_photo_bmp, 128, 64, SSD1306_WHITE);
   display.display();
-  delay(4000); // Logo nampil 3 detik
+  delay(1000); // Logo nampil detik
+}
+
+void tampilkanIntroAnime() {
+  // 1. EFEK GLITCH KILAT (0.2 - 0.3 detik)
+  for (int i = 0; i < 8; i++) {
+    display.clearDisplay();
+    // Gambar garis-garis acak biar kayak layar rusak/glitch
+    for (int j = 0; j < 10; j++) {
+      int y = random(0, 64);
+      display.drawFastHLine(0, y, 128, SSD1306_WHITE);
+    }
+    display.display();
+    delay(30); // Kecepatan kedip glitch
+  }
+
+  // 2. TAMPILAN STATIC (FOTO + TEKS)
+  display.clearDisplay();
+  
+  // Gambar Foto Anime di Kiri (0,0, 64x64)
+  // Pastiin nama variabel foto anime lu di photo_data.h itu 'foto_anime_64'
+  display.drawBitmap(0, 0, foto_anime_64, 64, 64, SSD1306_WHITE);
+  
+  // Garis Pemisah (Opsional tapi biar rapi)
+  display.drawFastVLine(65, 0, 64, SSD1306_WHITE);
+
+  // Teks Firmware di Kanan (Center secara vertikal)
+    // Teks Firmware di Kanan (Mulai dari x=68 biar ada gap dikit dari tengah)
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  
+  // Baris 1: Judul (Agak dikasih jarak atas)
+  display.setCursor(68, 6);  display.print("[ FIRMWARE ]");
+  
+  // Baris 2-6: Info Detail
+  display.setCursor(68, 18); display.print("Name: RootX");
+  display.setCursor(68, 28); display.print("Ver : 1.0.0");
+  display.setCursor(68, 38); display.print("By  : Andyy");
+  display.setCursor(68, 48); display.print("Mode: GOD");
+  
+  // Baris 7: Status paling bawah
+  display.setCursor(68, 56); display.print("Stat: Stable 0.96\""); 
+
+  display.display();
+  delay(3000); // Tahan 3 detik biar orang bisa liat Waifu & Nama lu wkwk
 }
 
 // 2. Fungsi Teks Splash (Setelah Logo Hilang)
@@ -15,9 +59,9 @@ void tampilkanTeksSplash() {
   display.setCursor(0, 10);
 
   // Efek ngetik teks hacker
-  String baris1 = ">> RootX Loading...";
-  String baris2 = ">> Creator: Andyy";
-  String baris3 = ">> Version: v1.0.0";
+  String baris1 = ">> Initializing Chip... ✓";
+  String baris2 = ">> Checking Flash... ✓";
+  String baris3 = ">> Checking PSRAM... ✓";
   String baris4 = ">> ROOTX READY!!";
 
   ketikTeks(baris1, 0, 10);
