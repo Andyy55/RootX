@@ -15,10 +15,21 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 #define PIN_RIGHT 15
 #define PIN_OK    16
 
-// --- VARIABEL MENU ---
+
+/// --- VARIABEL MENU ---
 int currentMenu = 0;
-const int totalMenu = 5;
-String menuItems[] = {"WIFI SCANNER", "BLE SPAMMER", "DEAUTH ATTACK", "IR REMOTE", "SETTINGS"};
+int topMenu = 0;       // <--- Variabel baru buat ngetrack layar geser
+const int totalMenu = 7; // <--- Kita tes jadi 7 menu
+String menuItems[] = {
+  "WIFI SCANNER", 
+  "BLE SPAMMER", 
+  "DEAUTH ATTACK", 
+  "IR REMOTE", 
+  "SETTINGS",
+  "SYSTEM INFO",       // <--- Menu baru ke-6
+  "ABOUT ROOTX"        // <--- Menu baru ke-7
+};
+
 
 void setup() {
   Serial.begin(115200);

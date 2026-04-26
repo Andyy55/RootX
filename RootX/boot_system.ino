@@ -15,10 +15,10 @@ void tampilkanTeksSplash() {
   display.setCursor(0, 10);
 
   // Efek ngetik teks hacker
-  String baris1 = ">> LOADING SYSTEM...";
-  String baris2 = ">> CHIP: ESP32-S3 N16R8";
-  String baris3 = ">> MEMORY: 8MB PSRAM OK";
-  String baris4 = ">> ROOTX READY!";
+  String baris1 = ">> RootX Loading...";
+  String baris2 = ">> Creator: Andyy";
+  String baris3 = ">> Version: v1.0.0";
+  String baris4 = ">> ROOTX READY!!";
 
   ketikTeks(baris1, 0, 10);
   delay(500);
