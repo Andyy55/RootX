@@ -36,19 +36,17 @@ void tampilkanIntroAnime() {
   display.setTextColor(SSD1306_WHITE);
   
   // Baris 1: Judul (Agak dikasih jarak atas)
-  display.setCursor(68, 6);  display.print("[ FIRMWARE ]");
+  display.setCursor(68, 6);  display.print("[FIRMWARE]");
   
   // Baris 2-6: Info Detail
-  display.setCursor(68, 18); display.print("Name: RootX");
-  display.setCursor(68, 28); display.print("Ver : 1.0.0");
-  display.setCursor(68, 38); display.print("By  : Andyy");
-  display.setCursor(68, 48); display.print("Mode: GOD");
-  
-  // Baris 7: Status paling bawah
-  display.setCursor(68, 56); display.print("Stat: Stable 0.96\""); 
+  display.setCursor(67, 18); display.print("Name:RootX");
+  display.setCursor(67, 28); display.print("Ver :1.0.0");
+  display.setCursor(67, 38); display.print("By  :Andyy");
+  display.setCursor(67, 48); display.print("Mode:GOD");
+  display.setCursor(67, 56); display.print("Stats:Opt"); 
 
   display.display();
-  delay(3000); // Tahan 3 detik biar orang bisa liat Waifu & Nama lu wkwk
+  delay(2500); // Tahan 3 detik biar orang bisa liat Waifu & Nama lu wkwk
 }
 
 // 2. Fungsi Teks Splash (Setelah Logo Hilang)
@@ -59,20 +57,20 @@ void tampilkanTeksSplash() {
   display.setCursor(0, 10);
 
   // Efek ngetik teks hacker
-  String baris1 = ">> Initializing Chip... ✓";
-  String baris2 = ">> Checking Flash... ✓";
-  String baris3 = ">> Checking PSRAM... ✓";
+  String baris1 = ">> Initializing...";
+  String baris2 = ">> Checking Flash...";
+  String baris3 = ">> Checking PSRAM...";
   String baris4 = ">> ROOTX READY!!";
 
   ketikTeks(baris1, 0, 10);
-  delay(500);
+  delay(150);
   ketikTeks(baris2, 0, 22);
-  delay(500);
+  delay(150);
   ketikTeks(baris3, 0, 34);
-  delay(500);
+  delay(150);
   ketikTeks(baris4, 0, 46);
   
-  delay(2000); // Teks nampil 2 detik sebelum masuk menu
+  delay(800); // Teks nampil 2 detik sebelum masuk menu
 }
 
 // Fungsi bantu buat efek ngetik per baris
@@ -81,7 +79,7 @@ void ketikTeks(String teks, int x, int y) {
   for (int i = 0; i < teks.length(); i++) {
     display.print(teks[i]);
     display.display();
-    delay(30); 
+    delay(25); 
   }
   display.println();
 }
