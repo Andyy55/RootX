@@ -1,19 +1,41 @@
 void handleJoystick() {
   static unsigned long lastPress = 0;
-  if (millis() - lastPress < 150) return; // Debounce
+  if (millis() - lastPress < 200) return; // Debounce gue naikin ke 200ms biar gak lompat
 
-  // --- ATAS ---
-  if (digitalRead(PIN_UP) == LOW) {
-    currentMenu--;
-    if (currentMenu < 0) {
-      currentMenu = totalMenu - 1;       // Balik ke menu paling bawah
-      topMenu = totalMenu - 5;           // Layar geser nampilin 5 menu terbawah
-      if (topMenu < 0) topMenu = 0;      // Jaga-jaga kalau menu < 5
-    } else if (currentMenu < topMenu) {
-      topMenu--;                         // Layar geser ke atas 1 baris
+  // --- BAWAH ---
+  if (digitalRead(PIN_DOWN) == LOW) {
+    if (currentMenu < totalMenu - 1) {
+      currentMenu++;
+      // Kalau kursor ngelewatin batas layar (5 menu), topMenu ikut turun
+      if (currentMenu >= topMenu + 5) {
+        topMenu++;
+      }
+    } else {
+      // Mentok bawah? Balik ke paling atas
+      currentMenu = 0;
+      topMenu = 0;
     }
     lastPress = millis();
   }
+  
+  // --- ATAS ---
+  if (digitalRead(PIN_UP) == LOW) {
+    if (currentMenu > 0) {
+      currentMenu--;
+      // Kalau kursor naik ngelewatin topMenu, topMenu ikut naik
+      if (currentMenu < topMenu) {
+        topMenu--;
+      }
+    } else {
+      // Mentok atas? Balik ke paling bawah
+      currentMenu = totalMenu - 1;
+      topMenu = totalMenu - 5;
+      if (topMenu < 0) topMenu = 0;
+    }
+    lastPress = millis();
+  }
+}
+
   
   // --- BAWAH ---
   if (digitalRead(PIN_DOWN) == LOW) {

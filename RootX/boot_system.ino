@@ -4,7 +4,7 @@ void tampilkanLogoDulu() {
   // Gambar logo mahkota/foto lu dari photo_data.h
   display.drawBitmap(0, 0, my_photo_bmp, 128, 64, SSD1306_WHITE);
   display.display();
-  delay(3000); // Logo nampil 3 detik
+  delay(4000); // Logo nampil 3 detik
 }
 
 // 2. Fungsi Teks Splash (Setelah Logo Hilang)

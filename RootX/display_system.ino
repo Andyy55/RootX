@@ -1,32 +1,31 @@
 void tampilkanMenuUtama() {
   display.clearDisplay();
   
-  // Header Menu
+  // Header (Garis di y=9)
   display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
   display.setCursor(25, 0);
-  display.print("#RootX Menu#");
+  display.print("# RootX Menu #");
   display.drawLine(0, 9, 128, 9, SSD1306_WHITE);
 
-  // LOOPING MAX 5 BARIS SAJA (Karena layar cuma muat 5)
+  // LOOPING 5 BARIS
   for(int i = 0; i < 5; i++) {
-    // itemIndex ini index asli dari array menuItems lu
-    int itemIndex = topMenu + i; 
-    
-    // Kalau indexnya udah melebihi total menu, stop ngegambar barisnya
-    if(itemIndex >= totalMenu) break; 
+    int itemIndex = topMenu + i;
+    if(itemIndex >= totalMenu) break;
 
-    // Posisi Y tetap paten berdasarkan i (0 sampai 4)
-    int yPos = 11 + (i * 10);
+    // yPos kita mulai di 13 biar gak nabrak garis header (y=9)
+    // Jarak per baris pas 10px
+    int yPos = 13 + (i * 10); 
     
-    // Pengecekan warnanya sekarang pake itemIndex
     if(itemIndex == currentMenu) {
-      display.fillRect(0, yPos - 1, 128, 11, SSD1306_WHITE);
+      // Tinggi kotak gue bikin 10px biar gak offset
+      display.fillRect(0, yPos - 1, 128, 10, SSD1306_WHITE);
       display.setTextColor(SSD1306_BLACK); 
     } else {
       display.setTextColor(SSD1306_WHITE);
     }
     
-    // Panggil Ikon (Lu atur sendiri sesuai itemIndex ya)
+    // Gambar Ikon (Setting koordinat X=2 biar rapi)
     const unsigned char* icon;
     if(itemIndex == 0) icon = icon_wifi;
     else if(itemIndex == 1) icon = icon_ble;
@@ -34,11 +33,12 @@ void tampilkanMenuUtama() {
     else if(itemIndex == 3) icon = icon_ir;
     else icon = icon_settings; // Sisanya pake ikon settings dulu buat tes
 
-    // Gambar Ikon & Teks
+
     display.drawBitmap(2, yPos - 1, icon, 10, 10, (itemIndex == currentMenu ? SSD1306_BLACK : SSD1306_WHITE));
-    display.setCursor(18, yPos + 1);
+    
+    // Teks Menu
+    display.setCursor(18, yPos);
     display.println(menuItems[itemIndex]);
   }
-  
   display.display();
 }
