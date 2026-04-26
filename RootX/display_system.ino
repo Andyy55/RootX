@@ -26,7 +26,7 @@ const unsigned char* iconListIR[] = {
   iconSmall_saved
 };
 
-const unsigned char* iconListIR[] = {
+const unsigned char* iconListSet[] = {
   iconSmall_bright,    
   iconSmall_wifi,   
   iconSmall_info,

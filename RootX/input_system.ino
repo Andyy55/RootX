@@ -26,19 +26,21 @@ void handleJoystick() {
     // MODE 2: LIST MENU (ATAS - BAWAH)
     // ==========================================
     // Di dalam handleJoystick bagian Mode List (inSubMenu == true)
+// Di input_system.ino dalam handleJoystick()
 if (digitalRead(PIN_DOWN) == LOW) {
-  int limit = 0;
-  if(currentMenu == 0) limit = 5; // Samain sama jumlah menu di atas
-  else if(currentMenu == 1) limit = 3;
-  else if(currentMenu == 2) limit = 5;
-  else limit = 4;
+  int limitMenu = 0; // Ganti nama biar gak bentrok
+  if(currentMenu == 0)      limitMenu = 5; 
+  else if(currentMenu == 1) limitMenu = 3;
+  else if(currentMenu == 2) limitMenu = 5;
+  else                      limitMenu = 4;
 
-  if (currentSub < limit - 1) {
+  if (currentSub < (limitMenu - 1)) { // Tambahin kurung biar aman
     currentSub++;
     if (currentSub >= topMenu + 5) topMenu++;
   }
   lastPress = millis();
 }
+
 
     else if (digitalRead(PIN_UP) == LOW) {
       if (currentSub > 0) {
