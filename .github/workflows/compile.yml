@@ -30,7 +30,7 @@ jobs:
       - name: Compile RootX
         run: |
           # FQBN ini paksa ESP32-S3 jalan di 16MB Flash dan 8MB PSRAM mode OPI
-          arduino-cli compile --fqbn esp32:esp32:esp32s3:FlashSize=16M,PSRAM=opi,FlashMode=opi --export-binaries RootX
+          arduino-cli compile --fqbn esp32:esp32:esp32s3:FlashSize=16M,PSRAM=opi,FlashMode=qio --export-binaries RootX
 
       - name: Upload File
         uses: actions/upload-artifact@v4
