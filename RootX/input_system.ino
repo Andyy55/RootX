@@ -27,8 +27,6 @@ void handleJoystick() {
     lastPress = millis();
   }
 
-  // ... (TOMBOL OK, KANAN, KIRI TETAP SAMA KAYA SEBELUMNYA) ...
-}
 
 
   // ATAS - Kurangi index menu
