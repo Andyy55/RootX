@@ -181,7 +181,7 @@ void tampilkanWifiScanner() {
 
     display.fillRect(0, 54, 128, 10, SSD1306_WHITE);
     display.setTextColor(SSD1306_BLACK);
-    display.setCursor(2, 55); display.print("< BACK");
+    display.setCursor(2, 55); display.print("< CANCEL");
     display.setCursor(95, 55); display.print("YES >");
   }
   
@@ -205,7 +205,7 @@ void tampilkanWifiScanner() {
 
       display.setTextColor(SSD1306_WHITE);
       display.setCursor(15, 25); display.print("BELUM ADA DATA!");
-      display.setCursor(10, 35); display.print("Scan WiFi lebih dulu");
+      display.setCursor(10, 35); display.print("Scan WiFi dulu");
 
       display.fillRect(0, 54, 128, 10, SSD1306_WHITE);
       display.setTextColor(SSD1306_BLACK);
@@ -308,6 +308,46 @@ void tampilkanWifiScanner() {
     }
   }
   
+
+  display.display();
+}
+void tampilkanDeauthScreen() {
+  display.clearDisplay();
+  
+  // --- KONFIRMASI (scannerState di mode Deauth kita pinjam aja angkanya) ---
+  if (deauthState == 0) {
+    display.fillRect(0, 0, 128, 10, SSD1306_WHITE);
+    display.setTextColor(SSD1306_BLACK);
+    display.setCursor(2, 1); display.print("DEAUTH ATTACK");
+    
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(10, 25); display.print("Attack Target Ini?");
+    display.setCursor(10, 35); display.print(targetTerkunci.ssid.substring(0,15));
+
+    display.fillRect(0, 54, 128, 10, SSD1306_WHITE);
+    display.setTextColor(SSD1306_BLACK);
+    display.setCursor(2, 55); display.print("< CANCEL");
+    display.setCursor(95, 55); display.print("YES >");
+  } 
+  
+  // --- PROSES ATTACK ---
+  else if (deauthState == 1) {
+    display.fillRect(0, 0, 128, 10, SSD1306_WHITE);
+    display.setTextColor(SSD1306_BLACK);
+    display.setCursor(2, 1); display.print("ATTACKING...");
+
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 20); display.print("Target: "); display.print(targetTerkunci.ssid);
+    display.setCursor(0, 30); display.print("Ch: "); display.print(targetTerkunci.channel);
+    
+    // Animasi Bar Ganti-ganti
+    int bar = (millis() / 50) % 128;
+    display.drawFastHLine(0, 45, bar, SSD1306_WHITE);
+    
+    display.fillRect(0, 54, 128, 10, SSD1306_WHITE);
+    display.setTextColor(SSD1306_BLACK);
+    display.setCursor(2, 55); display.print("< STOP ATTACK");
+  }
 
   display.display();
 }

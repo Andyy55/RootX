@@ -44,9 +44,15 @@ int totalWiFi = 0;
 int cursorInScanner = 0; // Kursor atas/bawah di scanner
 int scrollPosScanner = 0;
 int targetLockedIdx = -1;
+
 // --- BRANKAS TARGET ---
 WiFiData targetTerkunci; 
 bool adaTarget = false;  
+
+// --- DEAUTH VAR ----
+int deauthState = 0;
+bool isDeauthing = false;
+
 // ----------------------
 
 bool sedang_scan = false;

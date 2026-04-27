@@ -94,7 +94,16 @@ if (digitalRead(PIN_DOWN) == LOW) {
         scannerState = 2;     // LANGSUNG LOMPAT KE HASIL LIST! (Bypass Scan)
         cursorInScanner = 0;  // Reset kursor layar
         scrollPosScanner = 0; // Reset scroll
+      }     else if (currentMenu == 0 && currentSub == 2) { 
+      if (adaTarget) {
+        appMode = 2;     // Masuk mode Deauth
+        deauthState = 0; // Munculin "Yakin??"
+      } else {
+        // POPUP: BELUM SELECT TARGET
+        appMode = 1;      // Pinjam mode scanner
+        scannerState = 2; // Biar nampilin "BELUM ADA DATA" atau list kosong
       }
+     
       
       lastPress = millis();
     }
@@ -138,6 +147,8 @@ void handleNavigasiScanner(String btn) {
     }
      else if (btn == "SELECT" || btn == "OK") {
       // 1. Ambil baris yang dipilih
+      if (totalWiFi > 0) {
+        // 1. Kunci posisi kursor 
       targetLockedIdx = scrollPosScanner + cursorInScanner; 
       
       // 2. Kunci data ke brankas
@@ -148,11 +159,28 @@ void handleNavigasiScanner(String btn) {
       scannerState = 3;         // Pindah ke layar detail kilat
       popUpTimer = millis();    // Catat waktu mulai pop-up
     }
+    }
 
 
     else if (btn == "BACK") {
       scannerState = 0; // Balikin status ke konfirmasi buat next time
       appMode = 0;      // Balik ke list menu utama
+    }
+  }
+}
+void handleNavigasiDeauth(String btn) {
+  if (deauthState == 0) { // Layar Konfirmasi
+    if (btn == "BACK") appMode = 0; 
+    else if (btn == "SELECT") {
+      deauthState = 1;
+      isDeauthing = true;
+    }
+  } 
+  else if (deauthState == 1) { // Lagi Attack
+    if (btn == "BACK") { // Stop Attack
+      isDeauthing = false;
+      deauthState = 0;
+      appMode = 0; // Balik ke menu
     }
   }
 }
