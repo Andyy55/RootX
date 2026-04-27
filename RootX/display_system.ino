@@ -50,7 +50,7 @@ const char* subMenuIR[] = {
   "AC Remote",
   "Brute Force",
   "Saved Remotes"
-}
+};
 
 
 const char* subMenuSet[] = {
@@ -261,7 +261,7 @@ void tampilkanWifiScanner() {
     // Teks [OK] pas di tengah (X = 40)
     display.setCursor(40, 55); display.print("[OK] MENU");
   } // <--- TUTUP KURUNG STATE 2 DI SINI
-
+}
   
  else if (scannerState == 3) {
     display.clearDisplay();
