@@ -37,12 +37,18 @@ struct WiFiData {
 WiFiData listWiFi[30];
 // --- Variabel State WiFi Scanner ---
 int scannerState = 0; // 0=Konfirmasi, 1=Loading Scan, 2=Hasil List
+unsigned long popUpTimer = 0; // <--- TAMBAHIN INI buat ngitung durasi pop-up
 bool triggerScan = false; 
 bool scanDone = false;    
 int totalWiFi = 0;
 int cursorInScanner = 0; // Kursor atas/bawah di scanner
 int scrollPosScanner = 0;
 int targetLockedIdx = -1;
+// --- BRANKAS TARGET ---
+WiFiData targetTerkunci; 
+bool adaTarget = false;  
+// ----------------------
+
 bool sedang_scan = false;
 int appMode = 0;
 

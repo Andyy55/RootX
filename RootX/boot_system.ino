@@ -43,7 +43,7 @@ void tampilkanIntroAnime() {
   display.setCursor(67, 28); display.print("Ver :1.0.0");
   display.setCursor(67, 38); display.print("By  :Andyy");
   display.setCursor(67, 48); display.print("Mode:GOD");
-  display.setCursor(67, 56); display.print("Stats:Opt"); 
+  display.setCursor(67, 56); display.print("Stat:Opt"); 
 
   display.display();
   delay(2500); // Tahan 3 detik biar orang bisa liat Waifu & Nama lu wkwk

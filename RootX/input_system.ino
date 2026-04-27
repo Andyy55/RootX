@@ -43,19 +43,11 @@ void handleJoystick() {
       lastPress = millis();
     }
     else if (digitalRead(PIN_OK) == LOW) {
-     
-      if (currentMenu == 0 && currentSub == 0) {
-        
-        appMode = 1;      
-        scannerState = 0; 
-        
-      }
-      // Nanti buat menu "Beacon Spam" (baris ke-2), lu tinggal tambah:
-      // else if (currentMenu == 0 && currentSub == 1) { jalankan spam... }
-
+      inSubMenu = true; // MASUK KE LIST MENU
+      currentSub = 0;   // Reset kursor biar mulai dari atas
+      topMenu = 0;
       lastPress = millis();
     }
-
   } 
   else {
     // ==========================================
@@ -90,8 +82,20 @@ if (digitalRead(PIN_DOWN) == LOW) {
       inSubMenu = false; // KELUAR BALIK KE LOGO
       lastPress = millis();
     }
-    else if (digitalRead(PIN_OK) == LOW) {
-      // DI SINI NANTI LOGIKA JALANIN FITUR (Contoh: Scan WiFi)
+   else if (digitalRead(PIN_OK) == LOW) {
+     
+      if (currentMenu == 0 && currentSub == 0) {
+        
+        appMode = 1;      
+        scannerState = 0; 
+        
+      } else if (currentMenu == 0 && currentSub == 3) { 
+        appMode = 1;
+        scannerState = 2;     // LANGSUNG LOMPAT KE HASIL LIST! (Bypass Scan)
+        cursorInScanner = 0;  // Reset kursor layar
+        scrollPosScanner = 0; // Reset scroll
+      }
+      
       lastPress = millis();
     }
   }
@@ -132,9 +136,20 @@ void handleNavigasiScanner(String btn) {
       if (cursorInScanner < 2 && (scrollPosScanner + cursorInScanner) < (totalWiFi - 1)) cursorInScanner++;
       else if ((scrollPosScanner + 3) < totalWiFi) scrollPosScanner++;
     }
-    else if (btn == "SELECT" || btn == "OK") {
-      targetLockedIdx = scrollPosScanner + cursorInScanner; // KUNCI TARGET!
+     else if (btn == "SELECT" || btn == "OK") {
+      // 1. Ambil baris yang dipilih
+      targetLockedIdx = scrollPosScanner + cursorInScanner; 
+      
+      // 2. Kunci data ke brankas
+      targetTerkunci = listWiFi[targetLockedIdx];
+      adaTarget = true; 
+      
+      // 3. AKTIFKAN POP-UP!
+      scannerState = 3;         // Pindah ke layar detail kilat
+      popUpTimer = millis();    // Catat waktu mulai pop-up
     }
+
+
     else if (btn == "BACK") {
       scannerState = 0; // Balikin status ke konfirmasi buat next time
       appMode = 0;      // Balik ke list menu utama

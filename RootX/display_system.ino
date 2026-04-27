@@ -42,7 +42,7 @@ const char* subMenuWiFi[] = {
   "Scan WiFi",
   "Beacon Spam",
   "Deauth Attack",
-  "Select Target",
+  "List Scan",
   "RickRoll SSID",
 };
 
@@ -198,6 +198,19 @@ void tampilkanWifiScanner() {
   
   // --- STATE 2: HASIL LIST (Dinamis) ---
   else if (scannerState == 2) {
+  if (totalWiFi == 0) {
+      display.fillRect(0, 0, 128, 10, SSD1306_WHITE);
+      display.setTextColor(SSD1306_BLACK);
+      display.setCursor(2, 1); display.print("SAVED NETWORKS");
+
+      display.setTextColor(SSD1306_WHITE);
+      display.setCursor(15, 25); display.print("BELUM ADA DATA!");
+      display.setCursor(10, 35); display.print("Scan WiFi lebih dulu");
+
+      display.fillRect(0, 54, 128, 10, SSD1306_WHITE);
+      display.setTextColor(SSD1306_BLACK);
+      display.setCursor(2, 55); display.print("< BACK");
+    } else {
     // HEADER
     display.fillRect(0, 0, 128, 10, SSD1306_WHITE);
     display.setTextColor(SSD1306_BLACK);
@@ -217,8 +230,41 @@ void tampilkanWifiScanner() {
         }
 
         display.setCursor(1, yPos + 1); display.print(listWiFi[itemIdx].id); display.print(".");
+                // ... (Kodingan print ID yang atasnya tetep sama)
+        display.setCursor(1, yPos + 1); 
+        display.print(listWiFi[itemIdx].id); 
+        display.print(".");
+        
+        // ==========================================
+        // LOGIKA MARQUEE (TEKS BERJALAN)
+        // ==========================================
         String n = listWiFi[itemIdx].ssid;
-        display.print(n.substring(0, 8)); 
+        int maxChar = 8; // Batas aman maksimal huruf sebelum nabrak C:
+
+        if (i == cursorInScanner && n.length() > maxChar) {
+          // JIKA DI-SELECT & KEPANJANGAN -> JALANKAN ANIMASI GESER
+          int kelebihan = n.length() - maxChar;
+          
+          // millis() / 300 artinya kecepatan geser 1 huruf per 300ms (0.3 detik)
+          // + 4 itu ngasih "jeda" (pause) bentar pas teksnya udah mentok kiri
+          int offset = (millis() / 300) % (kelebihan + 4); 
+          
+          // Kalau offset lebih dari sisa huruf, tahan di ujung (biar kebaca belakangnya)
+          if (offset > kelebihan) offset = kelebihan; 
+          
+          display.print(n.substring(offset, offset + maxChar));
+        } 
+        else {
+          // JIKA TIDAK DI-SELECT -> STATIS (DIPOTONG NORMAL)
+          if (n.length() > maxChar) {
+            display.print(n.substring(0, maxChar));
+          } else {
+            display.print(n);
+          }
+        }
+        // ==========================================
+
+        // Lanjut print Channel sama Sinyal
         display.setCursor(65, yPos + 1); display.printf("C:%d", listWiFi[itemIdx].channel);
         display.setCursor(95, yPos + 1); display.printf("%ddB", listWiFi[itemIdx].rssi);
       }
@@ -232,9 +278,36 @@ void tampilkanWifiScanner() {
     if(targetLockedIdx != -1) {
       display.print("LOCKED ID:"); display.print(listWiFi[targetLockedIdx].id);
     } else {
-      display.print("SET TARGET >");
+      display.print("SELECT >");
     }
   }
+  }
+  
+    // --- STATE 3: POP-UP DETAIL TARGET (Setelah Klik Select) ---
+  else if (scannerState == 3) {
+    display.clearDisplay();
+    
+    // Header: SELECTED ID
+    display.fillRect(0, 0, 128, 10, SSD1306_WHITE);
+    display.setTextColor(SSD1306_BLACK);
+    display.setCursor(2, 1);
+    display.print("SELECTED ID: "); display.print(targetTerkunci.id);
+
+    // Body: Info Lengkap
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 15); display.print("SSID: "); display.println(targetTerkunci.ssid);
+    display.setCursor(0, 25); display.print("CH  : "); display.println(targetTerkunci.channel);
+    display.setCursor(0, 35); display.print("RSSI: "); display.print(targetTerkunci.rssi); display.println(" dBm");
+    display.setCursor(0, 45); display.print("MAC : "); display.println(targetTerkunci.mac);
+    
+    display.display();
+
+    // LOGIKA AUTO-BACK: Setelah 1.5 detik (1500ms), balik ke List (State 2)
+    if (millis() - popUpTimer > 1500) {
+      scannerState = 2; 
+    }
+  }
+  
 
   display.display();
 }

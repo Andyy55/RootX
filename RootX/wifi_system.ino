@@ -3,6 +3,9 @@ void loopWiFi(void * pvParameters) {
     if (triggerScan) {
       sedang_scan = true;
       
+       adaTarget = false;        // Target lama dihapus
+      targetLockedIdx = -1;     // Indeks kursor di-reset
+      
       // Bersihin data lama dulu biar fresh
       totalWiFi = 0;
       WiFi.mode(WIFI_STA);
