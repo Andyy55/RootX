@@ -114,3 +114,4 @@ void loop() {
     tampilkanDeauthScreen(); 
   }
 }
+disableCore0WDT(); // Matikan pengawas Core 0 biar gak auto-restart pas nembak paket

