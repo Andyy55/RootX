@@ -27,6 +27,15 @@ void handleJoystick() {
     }
     return; // PENTING: return di sini biar gak lanjut ngeksekusi kodingan menu utama lu di bawahnya!
   }
+  
+  if (appMode == 2) {
+    if (digitalRead(PIN_UP) == LOW)    { handleNavigasiDeauth("ATAS"); lastPress = millis(); }
+    else if (digitalRead(PIN_DOWN) == LOW)  { handleNavigasiDeauth("BAWAH"); lastPress = millis(); }
+    else if (digitalRead(PIN_LEFT) == LOW)  { handleNavigasiDeauth("BACK"); lastPress = millis(); }
+    else if (digitalRead(PIN_RIGHT) == LOW) { handleNavigasiDeauth("SELECT"); lastPress = millis(); }
+    else if (digitalRead(PIN_OK) == LOW)    { handleNavigasiDeauth("OK"); lastPress = millis(); }
+    return; // Biar gak bentrok sama menu bawah!
+  }
   // --- BATAS TAMBAHAN ---
 
   
@@ -136,7 +145,7 @@ void handleNavigasiScanner(String btn) {
       scannerState = 0; // Batalin nunggu, balik ke konfirmasi
     }
   }
-  // --- LOGIKA SAAT DI HASIL LIST (STATE 2) ---
+    // --- LOGIKA SAAT DI HASIL LIST (STATE 2) ---
   else if (scannerState == 2) {
     if (btn == "ATAS") {
       if (cursorInScanner > 0) cursorInScanner--;
@@ -146,36 +155,54 @@ void handleNavigasiScanner(String btn) {
       if (cursorInScanner < 2 && (scrollPosScanner + cursorInScanner) < (totalWiFi - 1)) cursorInScanner++;
       else if ((scrollPosScanner + 3) < totalWiFi) scrollPosScanner++;
     }
-     else if (btn == "SELECT" || btn == "OK") {
-      // 1. Ambil baris yang dipilih
+    // CUMA TOMBOL "OK" YANG BISA (Tombol Kanan/SELECT dimatiin)
+    else if (btn == "OK") {
       if (totalWiFi > 0) {
-        // 1. Kunci posisi kursor 
-      targetLockedIdx = scrollPosScanner + cursorInScanner; 
-      
-      // 2. Kunci data ke brankas
-      targetTerkunci = listWiFi[targetLockedIdx];
-      adaTarget = true; 
-      
-      // 3. AKTIFKAN POP-UP!
-      scannerState = 3;         // Pindah ke layar detail kilat
-      popUpTimer = millis();    // Catat waktu mulai pop-up
+        targetLockedIdx = scrollPosScanner + cursorInScanner; 
+        targetTerkunci = listWiFi[targetLockedIdx];
+        adaTarget = true; 
+        
+        scannerState = 4;   // PINDAH KE MENU CONTEXT
+        contextCursor = 0;  // Reset kursor context ke paling atas
+      }
     }
-    }
-
-
     else if (btn == "BACK") {
-      scannerState = 0; // Balikin status ke konfirmasi buat next time
-      appMode = 0;      // Balik ke list menu utama
+      scannerState = 0; 
+      appMode = 0;      
+    }
+  }
+  // --- LOGIKA SAAT DI MENU CONTEXT (STATE 4) ---
+  else if (scannerState == 4) {
+    if (btn == "ATAS") {
+      // Fitur Scroll Menu Context (Looping)
+      contextCursor = (contextCursor > 0) ? contextCursor - 1 : 1; 
+    }
+    else if (btn == "BAWAH") {
+      contextCursor = (contextCursor < 1) ? contextCursor + 1 : 0;
+    }
+    else if (btn == "OK") {
+      if (contextCursor == 0) {
+        appMode = 2;     // LOMPAT KE ATTACK DEAUTH
+        deauthState = 0; // Mulai dari konfirmasi
+      } 
+      else if (contextCursor == 1) {
+        scannerState = 3; // LOMPAT KE DETAIL VIEW
+      }
+    }
+    else if (btn == "BACK") {
+      scannerState = 2; // Batal, balik ke list WiFi
     }
   }
 }
+
 void handleNavigasiDeauth(String btn) {
   if (deauthState == 0) { // Layar Konfirmasi
     if (btn == "BACK") appMode = 0; 
-    else if (btn == "SELECT") {
+    else if (btn == "SELECT" || btn == "OK") { // Biar dua-duanya bisa
       deauthState = 1;
       isDeauthing = true;
     }
+
   } 
   else if (deauthState == 1) { // Lagi Attack
     if (btn == "BACK") { // Stop Attack

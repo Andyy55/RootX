@@ -1,17 +1,13 @@
 
 
-// --- DAFTAR IKON KECIL (10x10) UNTUK SUB-MENU ---
 
-// Ikon buat Menu WiFi (Samain urutannya sama subMenuWiFi)
 const unsigned char* iconListWiFi[] = {
   iconSmall_scan,    
   iconSmall_spam,    
-  iconSmall_skull,   
   iconSmall_sniff,   
   iconSmall_wifi
 };
 
-// Ikon buat Menu BLE (Contoh isi 3)
 const unsigned char* iconListBLE[] = {
   iconSmall_scan,    
   iconSmall_apple,   
@@ -32,37 +28,31 @@ const unsigned char* iconListSet[] = {
   iconSmall_info,
   iconSmall_repeat
 };
-// ... Buat juga untuk IR dan SETTINGS ...
 
-
-// --- DAFTAR NAMA MENU TIAP KATEGORI ---
-
-// Isi Menu WiFi (Contoh ada 6)
 const char* subMenuWiFi[] = {
   "Scan WiFi",
   "Beacon Spam",
-  "Deauth Attack",
   "List Scan",
   "RickRoll SSID",
 };
 
-// Isi Menu Bluetooth (Contoh ada 3)
+
 const char* subMenuBLE[] = {
   "BLE Scanner",
   "Spam Apple",
   "Spam Android"
 };
 
-// Isi Menu Infrared (Contoh ada 5)
+
 const char* subMenuIR[] = {
   "Read Signal",
   "TV B-Gone",
   "AC Remote",
   "Brute Force",
   "Saved Remotes"
-};
+}
 
-// Isi Menu Settings (Contoh ada 4)
+
 const char* subMenuSet[] = {
   "Brightness",
   "WiFi Setup",
@@ -75,7 +65,6 @@ const char* subMenuSet[] = {
 void tampilkanMenuLogo() {
   display.clearDisplay();
   
-  // --- HEADER TETEP STAY ---
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 0);
@@ -87,7 +76,6 @@ void tampilkanMenuLogo() {
   
   display.drawLine(0, 9, 128, 9, SSD1306_WHITE);
 
-  // --- LOGO GEDE 32x32 DI TENGAH (x=48, y=22) ---
   const unsigned char* bigIcon;
   if(currentMenu == 0)      bigIcon = logo_wifi_32; 
   else if(currentMenu == 1) bigIcon = logo_ble_32;
@@ -96,18 +84,14 @@ void tampilkanMenuLogo() {
 
   display.drawBitmap(48, 22, bigIcon, 32, 32, SSD1306_WHITE);
 
-  // --- TANDA PANAH < DAN > ---
-  display.setTextSize(2); // Bikin agak gede biar sangar
-  
-  // Panah Kiri
+  display.setTextSize(2); 
+ 
   display.setCursor(20, 30); 
   display.print("<");
   
-  // Panah Kanan
   display.setCursor(95, 30);
   display.print(">");
 
-  // --- NAVIGASI HINT BAWAH ---
   display.setTextSize(1);
   display.setCursor(40, 56);
   display.print(">SELECT<"); 
@@ -119,7 +103,6 @@ void tampilkanMenuLogo() {
 void tampilkanMenuUtama() { 
   display.clearDisplay();
   
-  // --- HEADER (Tetep Stay) ---
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 0);
@@ -274,40 +257,101 @@ void tampilkanWifiScanner() {
     display.fillRect(0, 54, 128, 10, SSD1306_WHITE);
     display.setTextColor(SSD1306_BLACK);
     display.setCursor(2, 55); display.print("< BACK");
-    display.setCursor(70, 55); 
-    if(targetLockedIdx != -1) {
-      display.print("LOCKED ID:"); display.print(listWiFi[targetLockedIdx].id);
-    } else {
-      display.print("SELECT >");
-    }
-  }
-  }
+    
+    // Teks [OK] pas di tengah (X = 40)
+    display.setCursor(40, 55); display.print("[OK] MENU");
+  } // <--- TUTUP KURUNG STATE 2 DI SINI
+
   
-    // --- STATE 3: POP-UP DETAIL TARGET (Setelah Klik Select) ---
-  else if (scannerState == 3) {
+ else if (scannerState == 3) {
     display.clearDisplay();
     
-    // Header: SELECTED ID
+    // --- 1. HEADER BLOK (PUTIH) ---
     display.fillRect(0, 0, 128, 10, SSD1306_WHITE);
     display.setTextColor(SSD1306_BLACK);
-    display.setCursor(2, 1);
-    display.print("SELECTED ID: "); display.print(targetTerkunci.id);
+    display.setCursor(22, 1); // Tengahin dikit
+    display.print("DETAIL TARGET");
 
-    // Body: Info Lengkap
+    // --- 2. BODY (INFO LENGKAP) - Spasi Kiri 5 Pixel ---
     display.setTextColor(SSD1306_WHITE);
-    display.setCursor(0, 15); display.print("SSID: "); display.println(targetTerkunci.ssid);
-    display.setCursor(0, 25); display.print("CH  : "); display.println(targetTerkunci.channel);
-    display.setCursor(0, 35); display.print("RSSI: "); display.print(targetTerkunci.rssi); display.println(" dBm");
-    display.setCursor(0, 45); display.print("MAC : "); display.println(targetTerkunci.mac);
+    int xSide = 5; // Jarak mepet kiri 5 pixel sesuai request
     
+    // SSID dengan Efek Geser (Marquee)
+    display.setCursor(xSide, 13);
+    display.print("SSID: ");
+    String namaSSID = targetTerkunci.ssid;
+    if (namaSSID.length() > 14) {
+        // Logika geser sederhana
+        int offset = (millis() / 200) % (namaSSID.length() - 10);
+        display.print(namaSSID.substring(offset, offset + 14));
+    } else {
+        display.print(namaSSID);
+    }
+
+    display.setCursor(xSide, 23); 
+    display.print("MAC : "); display.print(targetTerkunci.mac);
+    
+    display.setCursor(xSide, 33); 
+    display.print("CH  : "); display.print(targetTerkunci.channel);
+    display.print(" (2.4 GHz)");
+
+    display.setCursor(xSide, 43); 
+    display.print("SIG : "); display.print(targetTerkunci.rssi); 
+    display.print(" dBm");
+
+    // Vendor (Kalau lu ada database vendor, kalau gak ada tulis Espressif/Unknown)
+    display.setCursor(xSide, 53);
+    display.print("VEND: "); display.print("Unknown");
+
+    // --- 3. FOOTER BLOK (PUTIH) ---
+    display.fillRect(0, 54, 128, 10, SSD1306_WHITE);
+    display.setTextColor(SSD1306_BLACK);
+    display.setCursor(2, 55);
+    display.print("[<] BACK");
+
     display.display();
 
-    // LOGIKA AUTO-BACK: Setelah 1.5 detik (1500ms), balik ke List (State 2)
-    if (millis() - popUpTimer > 1500) {
-      scannerState = 2; 
+} else if (scannerState == 4) {
+    display.clearDisplay(); // Layar bersih, murni nampilin context menu
+
+    // 1. HEADER BLOK (Putih full 128px)
+    display.fillRect(0, 0, 128, 10, SSD1306_WHITE);
+    display.setTextColor(SSD1306_BLACK);
+    display.setCursor(43, 1); // Pas tengah
+    display.print("ACTIONS");
+
+    // 2. BODY MENU (Bisa di-scroll)
+    for(int i = 0; i < 2; i++) {
+        // Karena layarnya lega, kita kasih jarak agak renggang
+        int yPos = 20 + (i * 15); 
+        
+        uint16_t colorTheme = (contextCursor == i) ? SSD1306_BLACK : SSD1306_WHITE;
+        
+        // Kalau dipilih, blok dari ujung ke ujung (128px)
+        if(contextCursor == i) {
+            display.fillRect(0, yPos - 2, 128, 14, SSD1306_WHITE);
+        }
+        
+        // Gambar Ikon (Agak ke tengah dikit di X: 25)
+        const unsigned char* currentIcon = (i == 0) ? iconSmall_skull : iconSmall_info;
+        display.drawBitmap(25, yPos, currentIcon, 10, 10, colorTheme);
+        
+        // Tulis Teks
+        display.setTextColor(colorTheme);
+        display.setCursor(45, yPos + 1);
+        if (i == 0)      display.print("ATTACK");
+        else             display.print("DETAILS");
     }
+
+    // 3. FOOTER BLOK (Putih full 128px)
+    display.fillRect(0, 54, 128, 10, SSD1306_WHITE);
+    display.setTextColor(SSD1306_BLACK);
+    
+    // Kiri: < BACK
+    display.setCursor(2, 55); display.print("< BACK");
+    // Tengah: [OK] (X=50 biar pas di tengah layar)
+    display.setCursor(50, 55); display.print("[OK]"); 
   }
-  
 
   display.display();
 }
@@ -351,3 +395,10 @@ void tampilkanDeauthScreen() {
 
   display.display();
 }
+
+
+
+
+
+
+

@@ -33,17 +33,22 @@ struct WiFiData {
   String mac;
 };
 
+
+
+
+
 // Variabel Global Scanner
 WiFiData listWiFi[30];
 // --- Variabel State WiFi Scanner ---
-int scannerState = 0; // 0=Konfirmasi, 1=Loading Scan, 2=Hasil List
-unsigned long popUpTimer = 0; // <--- TAMBAHIN INI buat ngitung durasi pop-up
+int scannerState = 0; 
+unsigned long popUpTimer = 0; 
 bool triggerScan = false; 
 bool scanDone = false;    
 int totalWiFi = 0;
-int cursorInScanner = 0; // Kursor atas/bawah di scanner
+int cursorInScanner = 0; 
 int scrollPosScanner = 0;
 int targetLockedIdx = -1;
+int contextCursor = 0;
 
 // --- BRANKAS TARGET ---
 WiFiData targetTerkunci; 

