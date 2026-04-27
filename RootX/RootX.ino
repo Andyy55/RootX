@@ -110,5 +110,7 @@ void loop() {
   else if (appMode == 1) {
     // Kalau appMode 1, berarti lagi buka "Aplikasi" WiFi Scanner
     tampilkanWifiScanner(); 
+  } else if (appMode == 2) {
+    tampilkanDeauthScreen(); 
   }
 }
