@@ -108,7 +108,7 @@ void tampilkanMenuUtama() {
   display.setCursor(0, 0);
   int totalSub = 0; 
 
-  if(currentMenu == 0)      { display.print("#> RootX: WIFI"); totalSub = 5; }
+  if(currentMenu == 0)      { display.print("#> RootX: WIFI"); totalSub = 4; }
   else if(currentMenu == 1) { display.print("#> RootX: BLE "); totalSub = 3; }
   else if(currentMenu == 2) { display.print("#> RootX: IR");  totalSub = 5; }
   else                      { display.print("#> RootX: SETS"); totalSub = 4; }

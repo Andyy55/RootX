@@ -66,7 +66,7 @@ void handleJoystick() {
 // Di input_system.ino dalam handleJoystick()
 if (digitalRead(PIN_DOWN) == LOW) {
   int limitMenu = 0; // Ganti nama biar gak bentrok
-  if(currentMenu == 0)      limitMenu = 5; 
+  if(currentMenu == 0)      limitMenu = 4; 
   else if(currentMenu == 1) limitMenu = 3;
   else if(currentMenu == 2) limitMenu = 5;
   else                      limitMenu = 4;
