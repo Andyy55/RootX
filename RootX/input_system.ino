@@ -103,6 +103,7 @@ if (digitalRead(PIN_DOWN) == LOW) {
         appMode = 1;      // Pinjam mode scanner
         scannerState = 2; // Biar nampilin "BELUM ADA DATA" atau list kosong
       }
+      }
      
       
       lastPress = millis();

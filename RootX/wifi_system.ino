@@ -17,8 +17,6 @@ uint8_t deauthPacket[26] = {
 };
 
 
-
-
 void loopWiFi(void * pvParameters) {
   for(;;) {
     if (triggerScan) {
@@ -47,8 +45,7 @@ void loopWiFi(void * pvParameters) {
       sedang_scan = false;
       scanDone = true;     // Lapor ke Core 1 kalau udah beres
       triggerScan = false; // Matiin pelatuknya
-    }
-    else if (isDeauthing && adaTarget) {
+    } else if (isDeauthing && adaTarget) {
       uint8_t targetMac[6];
       stringToMac(targetTerkunci.mac, targetMac);
       
