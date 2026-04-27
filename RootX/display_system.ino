@@ -166,3 +166,75 @@ void tampilkanMenuUtama() {
   }
   display.display();
 }
+
+void tampilkanWifiScanner() {
+  display.clearDisplay();
+
+  // --- STATE 0: KONFIRMASI ---
+  if (scannerState == 0) {
+    display.fillRect(0, 0, 128, 10, SSD1306_WHITE);
+    display.setTextColor(SSD1306_BLACK);
+    display.setCursor(2, 1); display.print("WIFI SCANNER");
+
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(40, 25); display.print("Yakin??"); // Pertanyaan di tengah
+
+    display.fillRect(0, 54, 128, 10, SSD1306_WHITE);
+    display.setTextColor(SSD1306_BLACK);
+    display.setCursor(2, 55); display.print("< BACK");
+    display.setCursor(95, 55); display.print("YES >");
+  }
+  
+  // --- STATE 1: LOADING SCAN ---
+  else if (scannerState == 1) {
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(20, 25); 
+    display.print("Scanning Air..."); // Teks loading
+    // Kalau scan udah beres dari Core 0, otomatis ganti ke State 2
+    if (scanDone) {
+      scannerState = 2; 
+    }
+  }
+  
+  // --- STATE 2: HASIL LIST (Dinamis) ---
+  else if (scannerState == 2) {
+    // HEADER
+    display.fillRect(0, 0, 128, 10, SSD1306_WHITE);
+    display.setTextColor(SSD1306_BLACK);
+    display.setCursor(2, 1); display.printf("SCANNER - FOUND: %d", totalWiFi);
+    
+    // LIST CONTENT (Highlight Blok)
+    for (int i = 0; i < 3; i++) {
+      int itemIdx = scrollPosScanner + i;
+      if (itemIdx < totalWiFi) {
+        int yPos = 14 + (i * 13);
+        
+        if (i == cursorInScanner) {
+          display.fillRect(0, yPos - 1, 128, 12, SSD1306_WHITE);
+          display.setTextColor(SSD1306_BLACK);
+        } else {
+          display.setTextColor(SSD1306_WHITE);
+        }
+
+        display.setCursor(1, yPos + 1); display.print(listWiFi[itemIdx].id); display.print(".");
+        String n = listWiFi[itemIdx].ssid;
+        display.print(n.substring(0, 8)); 
+        display.setCursor(65, yPos + 1); display.printf("C:%d", listWiFi[itemIdx].channel);
+        display.setCursor(95, yPos + 1); display.printf("%ddB", listWiFi[itemIdx].rssi);
+      }
+    }
+
+    // FOOTER (Target Lock)
+    display.fillRect(0, 54, 128, 10, SSD1306_WHITE);
+    display.setTextColor(SSD1306_BLACK);
+    display.setCursor(2, 55); display.print("< BACK");
+    display.setCursor(70, 55); 
+    if(targetLockedIdx != -1) {
+      display.print("LOCKED ID:"); display.print(listWiFi[targetLockedIdx].id);
+    } else {
+      display.print("SET TARGET >");
+    }
+  }
+
+  display.display();
+}
