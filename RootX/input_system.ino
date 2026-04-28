@@ -19,11 +19,11 @@ void handleJoystick() {
   
   // Mode 3 (Brightness) karena dia gak pake fungsi handle luar, tulis gini aja:
   if (appMode == 3) {
-    if (btn == "ATAS") {
+    if (btn == "UP") {
       if (brightnessValue < 245) brightnessValue += 10;
       setOledBrightness(brightnessValue);
     }
-    else if (btn == "BAWAH") {
+    else if (btn == "DOWN") {
       if (brightnessValue > 10) brightnessValue -= 10;
       setOledBrightness(brightnessValue);
     }
@@ -134,10 +134,10 @@ else if (currentMenu == 0 && currentSub == 3) {
 void handleNavigasiScanner(String btn) {
   // --- LOGIKA SAAT DI MENU KONFIRMASI (STATE 0) ---
   if (scannerState == 0) {
-    if (btn == "BACK") {
+    if (btn == "LEFT") {
       appMode = 0; // Batal, balik ke list menu utama
     } 
-    else if (btn == "SELECT" || btn == "OK") { // Tombol YES ditekan
+    else if (btn == "RIGHT" || btn == "OK") { // Tombol YES ditekan
       scannerState = 1;     // Pindah ke layar loading
       triggerScan = true;   // Tarik pelatuk Core 0!
       scanDone = false;     // Reset flag
@@ -149,17 +149,17 @@ void handleNavigasiScanner(String btn) {
   else if (scannerState == 1) {
     // Biarin tombol mati rasa pas lagi scan biar gak error
     // Atau kalau mau bisa dibatalin:
-    if (btn == "BACK") {
+    if (btn == "LEFT") {
       scannerState = 0; // Batalin nunggu, balik ke konfirmasi
     }
   }
     // --- LOGIKA SAAT DI HASIL LIST (STATE 2) ---
   else if (scannerState == 2) {
-    if (btn == "ATAS") {
+    if (btn == "UP") {
       if (cursorInScanner > 0) cursorInScanner--;
       else if (scrollPosScanner > 0) scrollPosScanner--;
     } 
-    else if (btn == "BAWAH") {
+    else if (btn == "DOWN") {
       if (cursorInScanner < 2 && (scrollPosScanner + cursorInScanner) < (totalWiFi - 1)) cursorInScanner++;
       else if ((scrollPosScanner + 3) < totalWiFi) scrollPosScanner++;
     }
@@ -174,14 +174,14 @@ void handleNavigasiScanner(String btn) {
         contextCursor = 0;  // Reset kursor context ke paling atas
       }
     }
-    else if (btn == "BACK") {
+    else if (btn == "LEFT") {
       scannerState = 0; 
       appMode = 0;      
     }
   }
     // --- LOGIKA SAAT DI DETAIL VIEW (STATE 3) ---
   else if (scannerState == 3) {
-    if (btn == "BACK" || btn == "LEFT") { // Tambahin LEFT biar aman
+    if (btn == "LEFT") { // Tambahin LEFT biar aman
       scannerState = 4; // Balik ke Menu Context (Actions)
       // Kalau mau langsung balik ke list WiFi, ganti jadi: scannerState = 2;
     }
@@ -189,11 +189,11 @@ void handleNavigasiScanner(String btn) {
   
   // --- LOGIKA SAAT DI MENU CONTEXT (STATE 4) ---
   else if (scannerState == 4) {
-    if (btn == "ATAS") {
+    if (btn == "UP") {
       // Fitur Scroll Menu Context (Looping)
       contextCursor = (contextCursor > 0) ? contextCursor - 1 : 1; 
     }
-    else if (btn == "BAWAH") {
+    else if (btn == "DOWN") {
       contextCursor = (contextCursor < 1) ? contextCursor + 1 : 0;
     }
     else if (btn == "OK") {
@@ -205,7 +205,7 @@ void handleNavigasiScanner(String btn) {
         scannerState = 3; // LOMPAT KE DETAIL VIEW
       }
     }
-    else if (btn == "BACK") {
+    else if (btn == "LEFT") {
       scannerState = 2; // Batal, balik ke list WiFi
     }
   }
@@ -213,15 +213,15 @@ void handleNavigasiScanner(String btn) {
 
 void handleNavigasiDeauth(String btn) {
   if (deauthState == 0) { // Layar Konfirmasi
-    if (btn == "BACK") appMode = 0; 
-    else if (btn == "SELECT" || btn == "OK") { // Biar dua-duanya bisa
+    if (btn == "LEFT") appMode = 0; 
+    else if (btn == "RIGHT" || btn == "OK") { // Biar dua-duanya bisa
       deauthState = 1;
       isDeauthing = true;
     }
 
   } 
   else if (deauthState == 1) { // Lagi Attack
-    if (btn == "BACK") { // Stop Attack
+    if (btn == "LEFT") { // Stop Attack
       isDeauthing = false;
       deauthState = 0;
       appMode = 0; // Balik ke menu
@@ -235,14 +235,14 @@ void handleNavigasiSpam(String btn) {
       spamState = 1;
       isSpamming = true; // Core 0 langsung tancap gas nembak
     } 
-    else if (btn == "LEFT" || btn == "BACK") { // Tekan Kiri atau Back buat NO
+    else if (btn == "LEFT") { // Tekan Kiri atau Back buat NO
       appMode = 0; // Balik ke menu utama
       isSpamming = false;
       aktifModeSpam = 0; // Reset ID fiturnya
     }
   } 
   else if (spamState == 1) { // Lagi di layar "RUNNING..."
-    if (btn == "LEFT" || btn == "BACK") { // Tekan Kiri buat STOP
+    if (btn == "LEFT") { // Tekan Kiri buat STOP
       isSpamming = false;
       spamState = 0;
       appMode = 0; // Balik ke menu
