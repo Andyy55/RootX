@@ -2,7 +2,6 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include "photo_data.h"
-#include "esp_wifi.h"
 #include <WiFi.h>
 
 
