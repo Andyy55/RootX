@@ -47,7 +47,8 @@ int spamState = 0;
 bool isSpamming = false;
 int aktifModeSpam = 0;
 
-
+bool spamUdahSetup = false;
+bool deauthUdahSetup = false;
 
 
 // --- Variabel State WiFi Scanner ---
