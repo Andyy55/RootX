@@ -33,7 +33,7 @@ void handleJoystick() {
     return;
   }
 
-  // ... sisa kodingan menu utama lu di bawah ...
+  // ... sisa kodingan menu utama di bawah ...
 }
 
   // --- BATAS TAMBAHAN ---
@@ -101,14 +101,14 @@ if (btn == "DOWN") {
         appMode = 1;      
         scannerState = 0; 
         
-      } else if (currentMenu == 0 && currentSub == 2) { 
+      } else if (currentMenu == 0 && currentSub == 2) {
         appMode = 1;
         scannerState = 2;     // LANGSUNG LOMPAT KE HASIL LIST! (Bypass Scan)
         cursorInScanner = 0;  // Reset kursor layar
         scrollPosScanner = 0; // Reset scroll
       } else if (currentMenu == 3 && currentSub == 0) { // Menu Settings -> Brightness
     appMode = 3; 
-} else if (currentMenu == 0 && currentSub == 1) { 
+} else if (currentMenu == 0 && currentSub == 1) {
     aktifModeSpam = 1; // ID Beacon
     appMode = 4;       // Masuk ke layar konfirmasi spam
     spamState = 0;
@@ -125,7 +125,7 @@ else if (currentMenu == 0 && currentSub == 3) {
       lastPress = millis();
     }
   }
-}
+
 
 // ==========================================
 // LOGIKA NAVIGASI KHUSUS WIFI SCANNER

@@ -43,8 +43,10 @@ WiFiData listWiFi[30];
 
 int brightnessValue = 150; // Default (0-255)
 
+int spamState = 0; 
 bool isSpamming = false;
-int aktifModeSpam = 0; // 1: Beacon, 2: Rickroll, 3: BLE, dst.
+int aktifModeSpam = 0;
+
 
 
 
