@@ -100,9 +100,6 @@ void setup() {
   
   display.clearDisplay(); // Bersihin sisa-sisa tampilan lama
   
-  WiFi.mode(WIFI_AP_STA); // Nyalain dua-duanya biar aman
-  esp_wifi_start();
-
 
   // --- BOOTING ---
   tampilkanLogoDulu();    // 1. Logo Mahkota + Nama Andy (Identitas Awal)

