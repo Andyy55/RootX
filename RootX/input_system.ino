@@ -27,7 +27,7 @@ void handleJoystick() {
       if (brightnessValue > 10) brightnessValue -= 10;
       setOledBrightness(brightnessValue);
     }
-    else if (btn == "BACK") appMode = 0;
+    else if (btn == "LEFT") appMode = 0;
     
     lastPress = millis();
     return;
