@@ -34,7 +34,7 @@ void handleJoystick() {
   }
 
   // ... sisa kodingan menu utama di bawah ...
-}
+
 
   // --- BATAS TAMBAHAN ---
 
@@ -124,6 +124,7 @@ else if (currentMenu == 0 && currentSub == 3) {
       
       lastPress = millis();
     }
+  }
   }
 
 
