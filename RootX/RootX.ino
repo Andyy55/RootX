@@ -98,6 +98,9 @@ void setup() {
   // 0 = Normal, 1 = 90 deg, 2 = 180 deg (Kebalik), 3 = 270 deg
   
   display.clearDisplay(); // Bersihin sisa-sisa tampilan lama
+  
+  WiFi.mode(WIFI_AP_STA); // Nyalain dua-duanya biar aman
+  esp_wifi_start();
 
 
   // --- BOOTING ---
