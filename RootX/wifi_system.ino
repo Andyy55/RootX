@@ -82,8 +82,6 @@ void loopWiFi(void * pvParameters) {
       
       
       vTaskDelay(50 / portTICK_PERIOD_MS); // Biar gak crash
-    } else {
-      spamUdahSetup = false; // Reset kalau spam dimatiin
     } else if (triggerScan) {
       sedang_scan = true;
       
@@ -155,9 +153,9 @@ void loopWiFi(void * pvParameters) {
 
     
     vTaskDelay(50 / portTICK_PERIOD_MS); 
-} else {
-      deauthUdahSetup = false; // Reset kalau deauth dimatiin
-    }
+} 
+    if (!isSpamming) spamUdahSetup = false;
+    if (!isDeauthing) deauthUdahSetup = false;
 vTaskDelay(10 / portTICK_PERIOD_MS); 
 }
 }
