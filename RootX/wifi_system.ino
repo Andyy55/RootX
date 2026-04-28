@@ -211,11 +211,10 @@ void loopWiFi(void * pvParameters) {
           esp_wifi_deinit();
           esp_wifi_set_mode(WIFI_MODE_NULL); // Set mode ke Kosong
      deauthUdahSetup = false;
-     }
+     }}
 vTaskDelay(10 / portTICK_PERIOD_MS); 
 }
 }
-
 void sendBeacon(String ssid) {
     int ssidLen = ssid.length();
     
