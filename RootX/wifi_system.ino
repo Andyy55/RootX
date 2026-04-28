@@ -118,7 +118,7 @@ void loopWiFi(void * pvParameters) {
         
          
           
-           else if (isDeauthing && adaTarget) {
+           
     // 1. PINDAH MODE KE AP (Biar lebih sakti kayak GhostESP)
   else if (isDeauthing && adaTarget) {
     if (!deauthUdahSetup) {
