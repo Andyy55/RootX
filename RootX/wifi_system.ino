@@ -146,6 +146,7 @@ void loopWiFi(void * pvParameters) {
     
     vTaskDelay(50 / portTICK_PERIOD_MS); 
 }
+vTaskDelay(10 / portTICK_PERIOD_MS); 
 }
 }
 
