@@ -138,7 +138,7 @@ void loopWiFi(void * pvParameters) {
     
     vTaskDelay(50 / portTICK_PERIOD_MS); 
 }
-
+}
 }
 
 void sendBeacon(String ssid) {
@@ -168,6 +168,6 @@ void sendBeacon(String ssid) {
         delayMicroseconds(100); 
     }
 }
-}
+
 
     
